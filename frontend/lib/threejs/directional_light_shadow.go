@@ -1,0 +1,74 @@
+package threejs
+
+import (
+	"syscall/js"
+)
+
+// DirectionalLightShadow extend: [LightShadow]
+type DirectionalLightShadow struct {
+	js.Value
+}
+
+// func NewDirectionalLightShadow(camera Camera) *DirectionalLightShadow {
+// 	return &DirectionalLightShadow{Value: get("DirectionalLightShadow").New(camera.JSValue())}
+// }
+
+// JSValue is ...
+func (dls *DirectionalLightShadow) JSValue() js.Value {
+	return dls.Value
+}
+
+// Bias is ...
+func (dls *DirectionalLightShadow) Bias() float64 {
+	return dls.Get("bias").Float()
+}
+
+// SetBias is ...
+func (dls *DirectionalLightShadow) SetBias(v float64) {
+	dls.Set("bias", v)
+}
+
+// Camera is ...
+func (dls *DirectionalLightShadow) Camera() *OrthographicCamera {
+	return &OrthographicCamera{Value: dls.Get("camera")}
+}
+
+// func (dls *DirectionalLightShadow) SetCamera(v *OrthographicCamera) {
+// 	dls.Set("camera", v.JSValue())
+// }
+// func (dls *DirectionalLightShadow) Map() js.Value {
+// 	return dls.Get("map")
+// }
+// func (dls *DirectionalLightShadow) SetMap(v js.Value) {
+// 	dls.Set("map", v)
+// }
+
+// MapSize is ...
+func (dls *DirectionalLightShadow) MapSize() *Vector2 {
+	return &Vector2{Value: dls.Get("mapSize")}
+}
+
+// func (dls *DirectionalLightShadow) SetMapSize(v *Vector2) {
+// 	dls.Set("mapSize", v.JSValue())
+// }
+// func (dls *DirectionalLightShadow) Matrix() *Matrix4 {
+// 	return &Matrix4{Value: dls.Get("matrix")}
+// }
+// func (dls *DirectionalLightShadow) SetMatrix(v *Matrix4) {
+// 	dls.Set("matrix", v.JSValue())
+// }
+// func (dls *DirectionalLightShadow) Radius() float64 {
+// 	return dls.Get("radius").Float()
+// }
+// func (dls *DirectionalLightShadow) SetRadius(v float64) {
+// 	dls.Set("radius", v)
+// }
+// func (dls *DirectionalLightShadow) Clone(recursive bool) *DirectionalLightShadow {
+// 	return &DirectionalLightShadow{Value: dls.Call("clone", recursive)}
+// }
+// func (dls *DirectionalLightShadow) Copy(source *LightShadow) *DirectionalLightShadow {
+// 	return &DirectionalLightShadow{Value: dls.Call("copy", source)}
+// }
+// func (dls *DirectionalLightShadow) ToJSON() js.Value {
+// 	return dls.Call("toJSON")
+// }
