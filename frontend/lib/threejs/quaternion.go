@@ -9,9 +9,16 @@ type Quaternion struct {
 	js.Value
 }
 
-// func (qq *Quaternion) JSValue() js.Value {
-// 	return qq.Value
-// }
+// NewQuaternion is factory method for Quaternion.
+func NewQuaternion(x float64, y float64, z float64, w float64) *Quaternion {
+	return &Quaternion{Value: GetJsObject("Quaternion").New(x, y, z, w)}
+}
+
+// JSValue is ...
+func (qq *Quaternion) JSValue() js.Value {
+	return qq.Value
+}
+
 // func (qq *Quaternion) OnChangeCallback() js.Value {
 // 	return qq.Get("onChangeCallback")
 // }

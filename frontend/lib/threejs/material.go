@@ -4,20 +4,16 @@ import (
 	"syscall/js"
 )
 
-// func MaterialIdCount() int {
-// 	return get("MaterialIdCount").Int()
-// }
-// func SetMaterialIdCount(v int) {
-// 	set("MaterialIdCount", v)
-// }
-
 // MaterialParameters is ...
 type MaterialParameters interface {
 }
 
-// Material is ...
+// Material is the appearance of objects.
+// They are defined in a (mostly) renderer-independent way, so you don't have to rewrite materials if you decide to use a different renderer.
+// The following properties and methods are inherited by all other material types (although they may have different defaults).
 type Material interface {
 	JSValue() js.Value
+
 	// AlphaTest() float64
 	// SetAlphaTest(v float64)
 	// BlendDst() BlendingDstFactor
@@ -108,13 +104,18 @@ type Material interface {
 }
 
 // MaterialImpl extend: [EventDispatcher]
-type MaterialImpl struct {
+type defaultMaterialImpl struct {
 	js.Value
 }
 
+// NewDefaultMaterialFromJSValue is ...
+func NewDefaultMaterialFromJSValue(value js.Value) Material {
+	return &defaultMaterialImpl{Value: value}
+}
+
 // JSValue is ...
-func (mm *MaterialImpl) JSValue() js.Value {
-	return mm.Value
+func (m *defaultMaterialImpl) JSValue() js.Value {
+	return m.Value
 }
 
 // func (mm *MaterialImpl) AlphaTest() float64 {

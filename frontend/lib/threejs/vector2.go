@@ -37,6 +37,11 @@ type Vector2 struct {
 	js.Value
 }
 
+// NewVector2 is ...
+func NewVector2(x float64, y float64) *Vector2 {
+	return &Vector2{Value: GetJsObject("Vector2").New(x, y)}
+}
+
 // JSValue is ...
 func (vv *Vector2) JSValue() js.Value {
 	return vv.Value

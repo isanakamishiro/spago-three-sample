@@ -1,7 +1,6 @@
 package main
 
 import (
-	"app/frontend/lib/threejs"
 	"app/frontend/views"
 
 	"github.com/nobonobo/spago"
@@ -9,11 +8,12 @@ import (
 
 func main() {
 
-	threejs := threejs.NewThreeJs(
-		spago.LoadModuleAs("THREE", "https://cdnjs.cloudflare.com/ajax/libs/three.js/r122/three.module.js"),
-	)
+	// threejs := threejs.NewThreeJs(
+	// 	spago.LoadModuleAs("THREE", "https://cdnjs.cloudflare.com/ajax/libs/three.js/r122/three.module.js"),
+	// )
 
-	spago.RenderBody(views.NewMikuView(threejs))
+	// spago.RenderBody(views.NewMikuView())
+	spago.RenderBody(views.NewTop())
 
 	select {}
 }

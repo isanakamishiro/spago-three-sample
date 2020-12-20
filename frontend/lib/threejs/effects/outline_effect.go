@@ -1,7 +1,7 @@
 package effects
 
 import (
-	"app/frontend/threejs"
+	"app/frontend/lib/threejs"
 	"syscall/js"
 )
 

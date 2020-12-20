@@ -1,21 +1,37 @@
-package threejs
+package materials
 
 import (
-	"syscall/js"
+	"app/frontend/lib/threejs"
 )
 
 // MeshPhongMaterialParameters is ...
 type MeshPhongMaterialParameters interface {
 }
 
-// MeshPhongMaterial extend: [Material]
-type MeshPhongMaterial struct {
-	js.Value
+// MeshPhongMaterial is a material for shiny surfaces with specular highlights.
+// The material uses a non-physically based Blinn-Phong model for calculating reflectance.
+// Unlike the Lambertian model used in the MeshLambertMaterial this can simulate shiny surfaces with specular highlights (such as varnished wood).
+// Shading is calculated using a Phong shading model.
+// This calculates shading per pixel (i.e. in the fragment shader, AKA pixel shader) which gives more accurate results than the Gouraud model used by MeshLambertMaterial,
+// at the cost of some performance. The MeshStandardMaterial and MeshPhysicalMaterial also use this shading model.
+// Performance will generally be greater when using this material over the MeshStandardMaterial or MeshPhysicalMaterial, at the cost of some graphical accuracy.
+type MeshPhongMaterial interface {
+	threejs.Material
 }
 
-// JSValue is ...
-func (mpm *MeshPhongMaterial) JSValue() js.Value {
-	return mpm.Value
+// meshPhongMaterialImp is a implementation of MeshPhongMaterial.
+type meshPhongMaterialImp struct {
+	threejs.Material
+}
+
+// NewMeshPhongMaterial is constructor.
+// parameters - (optional) an object with one or more properties defining the material's appearance. Any property of the material (including any property inherited from Material) can be passed in here.
+// The exception is the property color, which can be passed in as a hexadecimal string and is 0xffffff (white) by default. Color.set( color ) is called internally.
+func NewMeshPhongMaterial(parameters MeshPhongMaterialParameters) MeshPhongMaterial {
+	return &meshPhongMaterialImp{
+		threejs.NewDefaultMaterialFromJSValue(threejs.GetJsObject("MeshPhongMaterial").New(parameters)),
+	}
+
 }
 
 // func (mpm *MeshPhongMaterial) AlphaMap() *Texture {

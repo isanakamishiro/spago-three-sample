@@ -20,6 +20,11 @@ type Matrix3 struct {
 	js.Value
 }
 
+// NewMatrix3 is factory method for Matrix3.
+func NewMatrix3() *Matrix3 {
+	return &Matrix3{Value: GetJsObject("Matrix3").New()}
+}
+
 // JSValue is ...
 func (mm *Matrix3) JSValue() js.Value {
 	return mm.Value

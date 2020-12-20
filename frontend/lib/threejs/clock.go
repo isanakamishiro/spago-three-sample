@@ -4,36 +4,75 @@ import (
 	"syscall/js"
 )
 
-// Clock is ...
+// Clock is Object for keeping track of time.
+// This uses performance.now if it is available, otherwise it reverts to the less accurate Date.now.
 type Clock interface {
 	JSValue() js.Value
-	GetDelta() float64
+
+	AutoStart() bool
+	Start()
+	Stop()
+	Delta() float64
+	ElapsedTime() float64
+	OldTime() float64
+	StartTime() float64
 }
 
-// ClockImp extend: []
-type ClockImp struct {
+// clockImp is default implementation of Clock interface.
+type clockImp struct {
 	js.Value
 }
 
+// NewClock is factory method for Clock.
+func NewClock(autoStart bool) Clock {
+	return &clockImp{Value: GetJsObject("Clock").New(autoStart)}
+}
+
 // JSValue is ...
-func (cc *ClockImp) JSValue() js.Value {
+func (cc *clockImp) JSValue() js.Value {
 	return cc.Value
 }
 
-// func (cc *Clock) AutoStart() bool {
-// 	return cc.Get("autoStart").Bool()
-// }
+// AutoStart is ...
+func (cc *clockImp) AutoStart() bool {
+	return cc.Get("autoStart").Bool()
+}
+
+// Start is ...
+func (cc *clockImp) Start() {
+	cc.Call("start")
+}
+
+// Stop is ...
+func (cc *clockImp) Stop() {
+	cc.Call("stop")
+}
+
+// Delta is ...
+func (cc *clockImp) Delta() float64 {
+	return cc.Call("getDelta").Float()
+}
+
+// ElapsedTime is ...
+func (cc *clockImp) ElapsedTime() float64 {
+	return cc.Get("getElapsedTime").Float()
+}
+
+// OldTime is ...
+func (cc *clockImp) OldTime() float64 {
+	return cc.Get("oldTime").Float()
+}
+
+// StartTime is ...
+func (cc *clockImp) StartTime() float64 {
+	return cc.Get("startTime").Float()
+}
+
 // func (cc *Clock) SetAutoStart(v bool) {
 // 	cc.Set("autoStart", v)
 // }
-// func (cc *Clock) ElapsedTime() float64 {
-// 	return cc.Get("elapsedTime").Float()
-// }
 // func (cc *Clock) SetElapsedTime(v float64) {
 // 	cc.Set("elapsedTime", v)
-// }
-// func (cc *Clock) OldTime() float64 {
-// 	return cc.Get("oldTime").Float()
 // }
 // func (cc *Clock) SetOldTime(v float64) {
 // 	cc.Set("oldTime", v)
@@ -49,19 +88,4 @@ func (cc *ClockImp) JSValue() js.Value {
 // }
 // func (cc *Clock) SetStartTime(v float64) {
 // 	cc.Set("startTime", v)
-// }
-
-// GetDelta is ...
-func (cc *ClockImp) GetDelta() float64 {
-	return cc.Call("getDelta").Float()
-}
-
-// func (cc *Clock) GetElapsedTime() float64 {
-// 	return cc.Call("getElapsedTime").Float()
-// }
-// func (cc *Clock) Start() {
-// 	cc.Call("start")
-// }
-// func (cc *Clock) Stop() {
-// 	cc.Call("stop")
 // }

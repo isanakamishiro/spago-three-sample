@@ -2,6 +2,11 @@ package views
 
 import (
 	"app/frontend/lib/threejs"
+	"app/frontend/lib/threejs/cameras"
+	"app/frontend/lib/threejs/geometries"
+	"app/frontend/lib/threejs/helpers"
+	"app/frontend/lib/threejs/lights"
+	"app/frontend/lib/threejs/materials"
 	"log"
 	"math"
 	"syscall/js"
@@ -34,7 +39,6 @@ func loadScript(url string) {
 type MikuView struct {
 	spago.Core
 
-	three    *threejs.ThreeJs
 	camera   threejs.Camera
 	scene    threejs.Scene
 	mesh     threejs.Mesh
@@ -62,17 +66,16 @@ type MikuView struct {
 }
 
 // NewMikuView is ...
-func NewMikuView(three *threejs.ThreeJs) *MikuView {
+func NewMikuView() *MikuView {
 
-	loadScript("assets/js/libs/ammo.wasm.js")
-	outlineEffectMod := spago.LoadModule([]string{"OutlineEffect"}, "./assets/jsm/effects/OutlineEffect2.js")
-	orbitControlsMod := spago.LoadModule([]string{"OrbitControls"}, "./assets/jsm/controls/OrbitControls.js")
-	mmdLoaderMod := spago.LoadModule([]string{"MMDLoader"}, "./assets/jsm/loaders/MMDLoader.js")
-	mmdAnimationHelperMod := spago.LoadModule([]string{"MMDAnimationHelper"}, "./assets/jsm/animation/MMDAnimationHelper.js")
-	statsMod := spago.LoadModule([]string{"Stats"}, "./assets/jsm/libs/stats.module.js")
+	loadScript("./assets/threejs/ex/js/libs/ammo.wasm.js")
+	outlineEffectMod := spago.LoadModule([]string{"OutlineEffect"}, "./assets/threejs/ex/jsm/effects/OutlineEffect.js")
+	orbitControlsMod := spago.LoadModule([]string{"OrbitControls"}, "./assets/threejs/ex/jsm/controls/OrbitControls.js")
+	mmdLoaderMod := spago.LoadModule([]string{"MMDLoader"}, "./assets/threejs/ex/jsm/loaders/MMDLoader.js")
+	mmdAnimationHelperMod := spago.LoadModule([]string{"MMDAnimationHelper"}, "./assets/threejs/ex/jsm/animation/MMDAnimationHelper.js")
+	statsMod := spago.LoadModule([]string{"Stats"}, "./assets/threejs/ex/jsm/libs/stats.module.js")
 
 	view := &MikuView{
-		three:                 three,
 		outlineEffectMod:      outlineEffectMod[0],
 		orbitControlsMod:      orbitControlsMod[0],
 		mmdLoaderMod:          mmdLoaderMod[0],
@@ -127,54 +130,53 @@ func (c *MikuView) Unmount() {
 func (c *MikuView) initScene() {
 
 	// Clock
-	c.clock = c.three.NewClock(true)
+	c.clock = threejs.NewClock(true)
 
 	// Camera
-	c.camera = c.three.NewPerspectiveCamera(45, 4/3, 1, 2000)
+	c.camera = cameras.NewPerspectiveCamera(45, 4/3, 1, 2000)
 	c.camera.Position().SetZ(40)
 	c.camera.Position().SetY(40)
 
 	// Scene
-	c.scene = c.three.NewScene()
-	c.scene.SetBackground(c.three.NewColor2(1, 1, 1).JSValue())
+	c.scene = threejs.NewScene()
+	c.scene.SetBackground(threejs.NewColorFromColorValue(0xffffff).JSValue())
 
 	// Grid
-	// gridHelper := c.three.NewPolarGridHelper(30, 10)
-	// gridHelper.Position().SetY(-10)
-	// c.scene.Add(gridHelper.JSValue())
+	gridHelper := helpers.NewPolarGridHelper(30, 10)
+	// gridHelper.Position().SetY(0)
+	c.scene.Add(gridHelper)
 
 	// Ground
-	ground := c.three.NewMesh(
-		c.three.NewPlaneBufferGeometry(100, 100, 1, 1),
-		c.three.NewMeshPhongMaterial(map[string]interface{}{
+	ground := threejs.NewMesh(
+		geometries.NewPlaneBufferGeometry(100, 100, 1, 1),
+		materials.NewMeshPhongMaterial(map[string]interface{}{
 			"color": 0xdddddd,
 		}),
 	)
 	ground.Rotation().SetX(-90 * math.Pi / 180)
 	// ground.SetReceiveShadow(true)
 	ground.JSValue().Set("receiveShadow", true)
-	c.scene.Add(ground.JSValue())
+	c.scene.AddMesh(ground)
 
 	// ambient := c.three.NewAmbientLight(0x666666)
 	// c.scene.Add(ambient.JSValue())
 
-	// directional := c.three.NewDirectionalLightFromColor(c.three.NewColor2(0.2, 0.1, 0.05), 1)
-	directional := c.three.NewDirectionalLight(0xFFFFFF)
-	directional.SetPosition(c.three.NewVector3(-15, 15, 15))
+	directional := lights.NewDirectionalLight(0xFFFFFF, 1)
+	directional.SetPosition(threejs.NewVector3(-15, 15, 15))
 	// Shadow parameters
 	// directional.JSValue().Set("castShadow", true)
 	directional.SetCastShadow(true)
 	directional.Shadow().MapSize().SetWidth(1024)
 	directional.Shadow().MapSize().SetHeight(1024)
-	directional.Shadow().Camera().SetRight(20)
-	directional.Shadow().Camera().SetTop(20)
-	directional.Shadow().Camera().SetLeft(-20)
-	directional.Shadow().Camera().SetBottom(-20)
+	// directional.Shadow().Camera().SetRight(20)
+	// directional.Shadow().Camera().SetTop(20)
+	// directional.Shadow().Camera().SetLeft(-20)
+	// directional.Shadow().Camera().SetBottom(-20)
 
 	// directional.Position().Normalize()
-	c.scene.Add(directional.JSValue())
+	c.scene.AddLight(directional)
 
-	c.renderer = c.three.NewWebGLRenderer(map[string]interface{}{
+	c.renderer = threejs.NewWebGLRenderer(map[string]interface{}{
 		"antialias": true,
 		"alpha":     false,
 	})
@@ -230,7 +232,7 @@ func (c *MikuView) initScene() {
 			mesh.Set("castShadow", true)
 			mesh.Set("receiveShadow", true)
 
-			c.scene.Add(mesh)
+			c.scene.AddMesh(threejs.NewMeshFromJSValue(mesh))
 
 			c.helper.Call("add", mesh, map[string]interface{}{
 				"animation": mmd.Get("animation"),
@@ -254,7 +256,7 @@ func (c *MikuView) animate(this js.Value, args []js.Value) interface{} {
 
 	c.stats.Call("begin")
 
-	c.helper.Call("update", c.clock.GetDelta())
+	c.helper.Call("update", c.clock.Delta())
 
 	c.renderID = js.Global().Call("requestAnimationFrame", js.FuncOf(c.animate))
 	c.outlineEffect.Call("render", c.scene.JSValue(), c.camera.JSValue())
@@ -273,8 +275,8 @@ func (c *MikuView) OnResize(this js.Value, args []js.Value) interface{} {
 	c.renderer.SetSize(width, height, true)
 	// c.outlineEffect.SetSize(width, height, true)
 
-	c.camera.(*threejs.PerspectiveCamera).SetAspect(width / height)
-	c.camera.(*threejs.PerspectiveCamera).UpdateProjectionMatrix()
+	c.camera.(cameras.PerspectiveCamera).SetAspect(width / height)
+	c.camera.(cameras.PerspectiveCamera).UpdateProjectionMatrix()
 
 	// println("Fire OnResize")
 

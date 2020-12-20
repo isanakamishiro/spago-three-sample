@@ -2,6 +2,10 @@ package views
 
 import (
 	"app/frontend/lib/threejs"
+	"app/frontend/lib/threejs/cameras"
+	"app/frontend/lib/threejs/geometries"
+	"app/frontend/lib/threejs/lights"
+	"app/frontend/lib/threejs/materials"
 	"syscall/js"
 
 	"github.com/nobonobo/spago"
@@ -13,7 +17,6 @@ import (
 type Top struct {
 	spago.Core
 
-	three    *threejs.ThreeJs
 	camera   threejs.Camera
 	scene    threejs.Scene
 	mesh     threejs.Mesh
@@ -24,27 +27,55 @@ type Top struct {
 }
 
 // NewTop is ...
-func NewTop(three *threejs.ThreeJs) *Top {
+func NewTop() *Top {
 
-	camera := three.NewPerspectiveCamera(70, 4/3, 0.01, 10)
-	camera.Position().SetZ(1)
-
-	scene := three.NewScene()
-
-	geometry := three.NewBoxGeometry(0.2, 0.2, 0.2, 1, 1, 1)
-	material := three.NewMeshNormalMaterial(js.Null())
-	mesh := three.NewMesh(geometry, material)
-
-	scene.Add(mesh.JSValue())
-
-	renderer := three.NewWebGLRenderer(map[string]interface{}{
+	// Renderer
+	renderer := threejs.NewWebGLRenderer(map[string]interface{}{
 		// "canvas":    js.Global().Get("document").Call("querySelector", "#myCanvas"),
 		"antialias": true,
 		"alpha":     true,
 	})
 
+	// Scene
+	scene := threejs.NewScene()
+
+	// Camera
+	const (
+		fov    = 40
+		aspect = 4 / 3
+		near   = 0.1
+		far    = 1000
+	)
+	camera := cameras.NewPerspectiveCamera(fov, aspect, near, far)
+	camera.Position().SetY(20)
+	camera.Up().SetZ(1)
+	camera.LookAt(threejs.NewVector3(0, 0, 0))
+
+	// Light
+	const (
+		color     = 0xFFFFFF
+		intensity = 3
+	)
+	light := lights.NewPointLight(color, intensity, 0, 1)
+	scene.AddLight(light)
+
+	// geometry
+	const (
+		radius         = 1
+		widthSegments  = 6
+		heightSegments = 6
+	)
+	geometry := geometries.NewBoxBufferGeometry(radius, radius, radius, widthSegments, heightSegments, heightSegments)
+	material := materials.NewMeshPhongMaterial(map[string]interface{}{
+		"emissive": 0xFFFF00,
+		// "color":    0xdddddd,
+	})
+
+	mesh := threejs.NewMesh(geometry, material)
+
+	scene.AddMesh(mesh)
+
 	top := &Top{
-		three:    three,
 		camera:   camera,
 		scene:    scene,
 		mesh:     mesh,
@@ -102,7 +133,7 @@ func (c *Top) OnResize(this js.Value, args []js.Value) interface{} {
 	c.renderer.SetPixelRatio(js.Global().Get("devicePixelRatio").Float())
 	c.renderer.SetSize(width, height, true)
 
-	c.camera.(*threejs.PerspectiveCamera).SetAspect(width / height)
+	c.camera.(cameras.PerspectiveCamera).SetAspect(width / height)
 
 	// println("Fire OnResize")
 

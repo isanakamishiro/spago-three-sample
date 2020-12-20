@@ -9,6 +9,11 @@ type Matrix4 struct {
 	js.Value
 }
 
+// NewMatrix4 is factory method for Matrix4.
+func NewMatrix4() *Matrix4 {
+	return &Matrix4{Value: GetJsObject("Matrix4").New()}
+}
+
 // JSValue is ...
 func (mm *Matrix4) JSValue() js.Value {
 	return mm.Value

@@ -26,13 +26,43 @@ type WebGLRendererParameters interface {
 }
 
 // WebGLRenderer extend: []
-type WebGLRenderer struct {
+type webGLRenderer struct {
 	js.Value
 }
 
+// NewWebGLRenderer is constructor for WebGLRenderer.
+func NewWebGLRenderer(parameters WebGLRendererParameters) Renderer {
+	return &webGLRenderer{Value: GetJsObject("WebGLRenderer").New(parameters)}
+}
+
 // JSValue is ...
-func (wglr *WebGLRenderer) JSValue() js.Value {
+func (wglr *webGLRenderer) JSValue() js.Value {
 	return wglr.Value
+}
+
+// Render is ...
+func (wglr *webGLRenderer) Render(scene Scene, camera Camera) {
+	wglr.Call("render", scene.JSValue(), camera.JSValue())
+}
+
+// SetPixelRatio is ...
+func (wglr *webGLRenderer) SetPixelRatio(value float64) {
+	wglr.Call("setPixelRatio", value)
+}
+
+// SetSize is ...
+func (wglr *webGLRenderer) SetSize(width float64, height float64, updateStyle bool) {
+	wglr.Call("setSize", width, height, updateStyle)
+}
+
+// DomElement is ...
+func (wglr *webGLRenderer) DomElement() js.Value {
+	return wglr.Get("domElement")
+}
+
+// ShadowMap is ...
+func (wglr *webGLRenderer) ShadowMap() *WebGLShadowMap {
+	return &WebGLShadowMap{Value: wglr.Get("shadowMap")}
 }
 
 // func (wglr *WebGLRenderer) AutoClear() bool {
@@ -83,11 +113,6 @@ func (wglr *WebGLRenderer) JSValue() js.Value {
 // func (wglr *WebGLRenderer) SetDebug(v js.Value) {
 // 	wglr.Set("debug", v)
 // }
-
-// DomElement is ...
-func (wglr *WebGLRenderer) DomElement() js.Value {
-	return wglr.Get("domElement")
-}
 
 // func (wglr *WebGLRenderer) SetDomElement(v js.Value) {
 // 	wglr.Set("domElement", v)
@@ -164,11 +189,6 @@ func (wglr *WebGLRenderer) DomElement() js.Value {
 // func (wglr *WebGLRenderer) SetRenderLists(v *WebGLRenderLists) {
 // 	wglr.Set("renderLists", v.JSValue())
 // }
-
-// ShadowMap is ...
-func (wglr *WebGLRenderer) ShadowMap() *WebGLShadowMap {
-	return &WebGLShadowMap{Value: wglr.Get("shadowMap")}
-}
 
 // func (wglr *WebGLRenderer) SetShadowMap(v *WebGLShadowMap) {
 // 	wglr.Set("shadowMap", v.JSValue())
@@ -315,11 +335,6 @@ func (wglr *WebGLRenderer) ShadowMap() *WebGLShadowMap {
 // 	wglr.Call("readRenderTargetPixels", renderTarget, x, y, width, height, buffer)
 // }
 
-// Render is ...
-func (wglr *WebGLRenderer) Render(scene Scene, camera Camera) {
-	wglr.Call("render", scene.JSValue(), camera.JSValue())
-}
-
 // func (wglr *WebGLRenderer) RenderBufferDirect(camera Camera, fog *Fog, material Material, geometryGroup js.Value, object *Object3D) {
 // 	wglr.Call("renderBufferDirect", camera.JSValue(), fog.JSValue(), material.JSValue(), geometryGroup, object.JSValue())
 // }
@@ -348,11 +363,6 @@ func (wglr *WebGLRenderer) Render(scene Scene, camera Camera) {
 // 	wglr.Call("setDrawingBufferSize", width, height, pixelRatio)
 // }
 
-// SetPixelRatio is ...
-func (wglr *WebGLRenderer) SetPixelRatio(value float64) {
-	wglr.Call("setPixelRatio", value)
-}
-
 // func (wglr *WebGLRenderer) SetRenderTarget(renderTarget js.Value, activeCubeFace float64, activeMipMapLevel float64) {
 // 	wglr.Call("setRenderTarget", renderTarget, activeCubeFace, activeMipMapLevel)
 // }
@@ -362,11 +372,6 @@ func (wglr *WebGLRenderer) SetPixelRatio(value float64) {
 // func (wglr *WebGLRenderer) SetScissorTest(enable bool) {
 // 	wglr.Call("setScissorTest", enable)
 // }
-
-// SetSize is ...
-func (wglr *WebGLRenderer) SetSize(width float64, height float64, updateStyle bool) {
-	wglr.Call("setSize", width, height, updateStyle)
-}
 
 // func (wglr *WebGLRenderer) SetViewport(x *Vector4, y float64, width float64, height float64) {
 // 	wglr.Call("setViewport", x, y, width, height)

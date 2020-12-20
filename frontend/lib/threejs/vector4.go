@@ -9,9 +9,16 @@ type Vector4 struct {
 	js.Value
 }
 
-// func (vv *Vector4) JSValue() js.Value {
-// 	return vv.Value
-// }
+// NewVector4 is ...
+func NewVector4(x float64, y float64, z float64, w float64) *Vector4 {
+	return &Vector4{Value: GetJsObject("Vector4").New(x, y, z, w)}
+}
+
+// JSValue is ...
+func (vv *Vector4) JSValue() js.Value {
+	return vv.Value
+}
+
 // func (vv *Vector4) IsVector4() bool {
 // 	return vv.Get("isVector4").Bool()
 // }

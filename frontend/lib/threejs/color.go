@@ -4,18 +4,71 @@ import (
 	"syscall/js"
 )
 
+// ColorName is X11 color name - all 140 color names are supported.
+// Note the lack of CamelCase in the name
+type ColorName string
+
+// ColorValue is numeric value of the RGB component of the color. e.g. 0xffffff.
+type ColorValue int
+
 // HSL is ...
-type HSL interface {
+// type HSL interface {
+// }
+
+// Color is ...
+type Color interface {
+	JSValue() js.Value
+
+	R() float64
+	G() float64
+	B() float64
 }
 
 // Color extend: []
-type Color struct {
+type colorImp struct {
 	js.Value
 }
 
+// NewColor is constructor for color object.
+func NewColor() Color {
+	return &colorImp{Value: GetJsObject("Color").New()}
+}
+
+// NewColorFromJSValue is constructor for color object.
+func NewColorFromJSValue(value js.Value) Color {
+	return &colorImp{Value: value}
+}
+
+// NewColorFromColorValue is constructor for color object from Hexadecimal value
+func NewColorFromColorValue(color ColorValue) Color {
+	return &colorImp{Value: GetJsObject("Color").New(float64(color))}
+}
+
+// NewColorFromColorName is constructor for color object from ColorName
+func NewColorFromColorName(colorName ColorName) Color {
+	return &colorImp{Value: GetJsObject("Color").New(string(colorName))}
+}
+
+// NewColorFromRGB is constructor for color object from separate RGB values between 0 and 1
+func NewColorFromRGB(r, g, b float64) Color {
+	return &colorImp{Value: GetJsObject("Color").New(r, g, b)}
+}
+
 // JSValue is ...
-func (cc *Color) JSValue() js.Value {
+func (cc *colorImp) JSValue() js.Value {
 	return cc.Value
+}
+
+func (cc *colorImp) R() float64 {
+	return cc.Get("r").Float()
+}
+
+func (cc *colorImp) G() float64 {
+	return cc.Get("g").Float()
+}
+
+func (cc *colorImp) B() float64 {
+	return cc.Get("b").Float()
 }
 
 // func (cc *Color) B() float64 {

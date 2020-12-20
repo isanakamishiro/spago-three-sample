@@ -9,6 +9,11 @@ type Vector3 struct {
 	js.Value
 }
 
+// NewVector3 is ...
+func NewVector3(x float64, y float64, z float64) *Vector3 {
+	return &Vector3{Value: GetJsObject("Vector3").New(x, y, z)}
+}
+
 // JSValue is ...
 func (vv *Vector3) JSValue() js.Value {
 	return vv.Value
@@ -270,9 +275,9 @@ func (vv *Vector3) Normalize() *Vector3 {
 }
 
 // Project is ...
-func (vv *Vector3) Project(camera Camera) *Vector3 {
-	return &Vector3{Value: vv.Call("project", camera.JSValue())}
-}
+// func (vv *Vector3) Project(camera cameras.Camera) *Vector3 {
+// 	return &Vector3{Value: vv.Call("project", camera.JSValue())}
+// }
 
 // ProjectOnPlane is ...
 func (vv *Vector3) ProjectOnPlane(planeNormal *Vector3) *Vector3 {
@@ -390,6 +395,6 @@ func (vv *Vector3) TransformDirection(m *Matrix4) *Vector3 {
 }
 
 // Unproject is ...
-func (vv *Vector3) Unproject(camera Camera) *Vector3 {
-	return &Vector3{Value: vv.Call("unproject", camera.JSValue())}
-}
+// func (vv *Vector3) Unproject(camera cameras.Camera) *Vector3 {
+// 	return &Vector3{Value: vv.Call("unproject", camera.JSValue())}
+// }

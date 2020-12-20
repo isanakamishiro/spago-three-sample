@@ -1,21 +1,44 @@
-package threejs
+package materials
 
 import (
-	"syscall/js"
+	"app/frontend/lib/threejs"
 )
 
-// MeshLambertMaterialParameters is ...
+// MeshLambertMaterialParameters is parameter
 type MeshLambertMaterialParameters interface {
 }
 
-// MeshLambertMaterial extend: [Material]
-type MeshLambertMaterial struct {
-	js.Value
+// MeshLambertMaterial is a material for non-shiny surfaces, without specular highlights.
+//
+// The material uses a non-physically based Lambertian model for calculating reflectance.
+// This can simulate some surfaces (such as untreated wood or stone) well,
+// but cannot simulate shiny surfaces with specular highlights (such as varnished wood).
+//
+// Shading is calculated using a Gouraud shading model.
+// This calculates shading per vertex (i.e. in the vertex shader) and interpolates the results over the polygon's faces.
+//
+// Due to the simplicity of the reflectance and illumination models,
+// performance will be greater when using this material over the MeshPhongMaterial,
+// MeshStandardMaterial or MeshPhysicalMaterial, at the cost of some graphical accuracy.
+type MeshLambertMaterial interface {
+	threejs.Material
 }
 
-// JSValue is ...
-func (mlm *MeshLambertMaterial) JSValue() js.Value {
-	return mlm.Value
+// meshLambertMaterialImp is implementation of MeshLambertMaterial
+type meshLambertMaterialImp struct {
+	threejs.Material
+}
+
+// NewMeshLambertMaterial is constructor
+// parameters - (optional) an object with one or more properties defining the material's appearance.
+// Any property of the material (including any property inherited from Material) can be passed in here.
+//
+// The exception is the property color, which can be passed in as a hexadecimal string and is 0xffffff (white) by default.
+// Color.set( color ) is called internally.
+func NewMeshLambertMaterial(parameters MeshLambertMaterialParameters) MeshLambertMaterial {
+	return &meshLambertMaterialImp{
+		threejs.NewDefaultMaterialFromJSValue(threejs.GetJsObject("MeshLambertMaterial").New(parameters)),
+	}
 }
 
 // func (mlm *MeshLambertMaterial) AlphaMap() *Texture {
