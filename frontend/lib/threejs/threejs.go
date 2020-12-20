@@ -6,6 +6,8 @@ import (
 	"github.com/nobonobo/spago"
 )
 
+type RenderID js.Value
+
 const modulePath = "./assets/threejs/build/three.module.js"
 
 var module js.Value
@@ -22,4 +24,14 @@ func GetJsObject(key string) js.Value {
 // setJsObject is setter for JavaScript object of ThreeJs.
 func setJsObject(key string, v interface{}) {
 	module.Set(key, v)
+}
+
+// RequestAnimationFrame is ...
+func RequestAnimationFrame(render js.Func) RenderID {
+	return RenderID(js.Global().Call("requestAnimationFrame", render))
+}
+
+// CancelAnimationFrame is ...
+func CancelAnimationFrame(renderID RenderID) {
+	js.Global().Call("cancelAnimationFrame", js.Value(renderID))
 }

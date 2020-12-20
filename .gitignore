@@ -1,5 +1,7 @@
 # Assets and dist folder
-*/assets
+*/assets/models
+*/assets/threejs
+
 */dist
 
 # Binaries for programs and plugins

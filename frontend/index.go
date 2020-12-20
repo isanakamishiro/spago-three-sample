@@ -8,12 +8,13 @@ import (
 
 func main() {
 
-	// threejs := threejs.NewThreeJs(
-	// 	spago.LoadModuleAs("THREE", "https://cdnjs.cloudflare.com/ajax/libs/three.js/r122/three.module.js"),
-	// )
-
 	// spago.RenderBody(views.NewMikuView())
-	spago.RenderBody(views.NewTop())
+	// spago.RenderBody(views.NewTop())
+
+	spago.AddStylesheet("./assets/app.css")
+
+	// ThreeJs experiment
+	spago.RenderBody(views.NewFundamental1())
 
 	select {}
 }
