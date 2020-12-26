@@ -26,6 +26,8 @@ type MeshStandardMaterialParameters interface {
 // Technical details of the approach used in three.js (and most other PBR systems) can be found is this paper from Disney (pdf), by Brent Burley.
 type MeshStandardMaterial interface {
 	threejs.Material
+
+	Color() threejs.Color
 }
 
 type meshStandardMaterialImp struct {
@@ -37,9 +39,16 @@ type meshStandardMaterialImp struct {
 // Any property of the material (including any property inherited from Material) can be passed in here.
 // The exception is the property color, which can be passed in as a hexadecimal string and is 0xffffff (white) by default. Color.set( color ) is called internally.
 func NewMeshStandardMaterial(parameters MeshStandardMaterialParameters) MeshStandardMaterial {
-	return &meshPhongMaterialImp{
+	return &meshStandardMaterialImp{
 		threejs.NewDefaultMaterialFromJSValue(threejs.GetJsObject("MeshStandardMaterial").New(parameters)),
 	}
+}
+
+// Color of the material, by default set to white (0xffffff).
+func (c *meshStandardMaterialImp) Color() threejs.Color {
+	return threejs.NewColorFromJSValue(
+		c.JSValue().Get("color"),
+	)
 }
 
 // func (msm *MeshStandardMaterial) AlphaMap() *Texture {

@@ -8,13 +8,14 @@ import (
 
 func main() {
 
-	// spago.RenderBody(views.NewMikuView())
-	// spago.RenderBody(views.NewTop())
-
 	spago.AddStylesheet("./assets/app.css")
 
 	// ThreeJs experiment
-	spago.RenderBody(views.NewFundamental1())
+
+	// spago.RenderBody(views.NewMikuView())
+	// spago.RenderBody(views.NewTop())
+	// spago.RenderBody(views.NewFundamental1())
+	spago.RenderBody(views.NewFundamental2())
 
 	select {}
 }

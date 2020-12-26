@@ -69,11 +69,13 @@ type MikuView struct {
 func NewMikuView() *MikuView {
 
 	loadScript("./assets/threejs/ex/js/libs/ammo.wasm.js")
-	outlineEffectMod := spago.LoadModule([]string{"OutlineEffect"}, "./assets/threejs/ex/jsm/effects/OutlineEffect.js")
 	orbitControlsMod := spago.LoadModule([]string{"OrbitControls"}, "./assets/threejs/ex/jsm/controls/OrbitControls.js")
+	outlineEffectMod := spago.LoadModule([]string{"OutlineEffect"}, "./assets/threejs/ex/jsm/effects/OutlineEffect.js")
 	mmdLoaderMod := spago.LoadModule([]string{"MMDLoader"}, "./assets/threejs/ex/jsm/loaders/MMDLoader.js")
 	mmdAnimationHelperMod := spago.LoadModule([]string{"MMDAnimationHelper"}, "./assets/threejs/ex/jsm/animation/MMDAnimationHelper.js")
 	statsMod := spago.LoadModule([]string{"Stats"}, "./assets/threejs/ex/jsm/libs/stats.module.js")
+
+	// log.Printf("%v\n", orbitControlsMod[0])
 
 	view := &MikuView{
 		outlineEffectMod:      outlineEffectMod[0],

@@ -22,6 +22,8 @@ type MeshLambertMaterialParameters interface {
 // MeshStandardMaterial or MeshPhysicalMaterial, at the cost of some graphical accuracy.
 type MeshLambertMaterial interface {
 	threejs.Material
+
+	Color() threejs.Color
 }
 
 // meshLambertMaterialImp is implementation of MeshLambertMaterial
@@ -39,6 +41,13 @@ func NewMeshLambertMaterial(parameters MeshLambertMaterialParameters) MeshLamber
 	return &meshLambertMaterialImp{
 		threejs.NewDefaultMaterialFromJSValue(threejs.GetJsObject("MeshLambertMaterial").New(parameters)),
 	}
+}
+
+// Color of the material, by default set to white (0xffffff).
+func (c *meshLambertMaterialImp) Color() threejs.Color {
+	return threejs.NewColorFromJSValue(
+		c.JSValue().Get("color"),
+	)
 }
 
 // func (mlm *MeshLambertMaterial) AlphaMap() *Texture {

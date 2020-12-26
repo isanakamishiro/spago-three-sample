@@ -14,6 +14,11 @@ func NewVector3(x float64, y float64, z float64) *Vector3 {
 	return &Vector3{Value: GetJsObject("Vector3").New(x, y, z)}
 }
 
+// NewVector3FromJSValue is ...
+func NewVector3FromJSValue(v js.Value) *Vector3 {
+	return &Vector3{Value: v}
+}
+
 // JSValue is ...
 func (vv *Vector3) JSValue() js.Value {
 	return vv.Value

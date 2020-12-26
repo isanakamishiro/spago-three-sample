@@ -17,6 +17,8 @@ type MeshPhongMaterialParameters interface {
 // Performance will generally be greater when using this material over the MeshStandardMaterial or MeshPhysicalMaterial, at the cost of some graphical accuracy.
 type MeshPhongMaterial interface {
 	threejs.Material
+
+	Color() threejs.Color
 }
 
 // meshPhongMaterialImp is a implementation of MeshPhongMaterial.
@@ -32,6 +34,13 @@ func NewMeshPhongMaterial(parameters MeshPhongMaterialParameters) MeshPhongMater
 		threejs.NewDefaultMaterialFromJSValue(threejs.GetJsObject("MeshPhongMaterial").New(parameters)),
 	}
 
+}
+
+// Color of the material, by default set to white (0xffffff).
+func (c *meshPhongMaterialImp) Color() threejs.Color {
+	return threejs.NewColorFromJSValue(
+		c.JSValue().Get("color"),
+	)
 }
 
 // func (mpm *MeshPhongMaterial) AlphaMap() *Texture {

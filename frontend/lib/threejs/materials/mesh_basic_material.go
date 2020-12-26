@@ -13,6 +13,8 @@ type MeshBasicMaterialParameters interface {
 // This material is not affected by lights.
 type MeshBasicMaterial interface {
 	threejs.Material
+
+	Color() threejs.Color
 }
 
 // meshPhongMaterialImp is a implementation of MeshPhongMaterial.
@@ -32,4 +34,11 @@ func NewMeshBasicMaterial(parameters MeshBasicMaterialParameters) MeshBasicMater
 		threejs.NewDefaultMaterialFromJSValue(threejs.GetJsObject("MeshBasicMaterial").New(parameters)),
 	}
 
+}
+
+// Color of the material, by default set to white (0xffffff).
+func (c *meshBasicMaterialImp) Color() threejs.Color {
+	return threejs.NewColorFromJSValue(
+		c.JSValue().Get("color"),
+	)
 }

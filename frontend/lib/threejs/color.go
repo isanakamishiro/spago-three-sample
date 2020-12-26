@@ -22,6 +22,10 @@ type Color interface {
 	R() float64
 	G() float64
 	B() float64
+
+	Hex() int
+	SetHex(hex int)
+	HexString() string
 }
 
 // Color extend: []
@@ -59,16 +63,34 @@ func (cc *colorImp) JSValue() js.Value {
 	return cc.Value
 }
 
+// R is ...
 func (cc *colorImp) R() float64 {
 	return cc.Get("r").Float()
 }
 
+// G is ...
 func (cc *colorImp) G() float64 {
 	return cc.Get("g").Float()
 }
 
+// B is ...
 func (cc *colorImp) B() float64 {
 	return cc.Get("b").Float()
+}
+
+// Hex is ...
+func (cc *colorImp) Hex() int {
+	return cc.Call("getHex").Int()
+}
+
+// SetHex is ...
+func (cc *colorImp) SetHex(hex int) {
+	cc.Call("setHex", hex)
+}
+
+// HexString is ...
+func (cc *colorImp) HexString() string {
+	return cc.Call("getHexString").String()
 }
 
 // func (cc *Color) B() float64 {
