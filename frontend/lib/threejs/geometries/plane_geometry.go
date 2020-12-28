@@ -41,7 +41,7 @@ type planeGeometryImp struct {
 // widthSegments — Optional. Default is 1.
 // heightSegments — Optional. Default is 1.
 func NewPlaneGeometry(width float64, height float64, widthSegments int, heightSegments int) PlaneBufferGeometry {
-	return planeBufferGeometryImp{
+	return &planeBufferGeometryImp{
 		threejs.NewDefaultGeometryFromJSValue(
 			threejs.GetJsObject("PlaneGeometry").New(width, height, widthSegments, heightSegments),
 		),

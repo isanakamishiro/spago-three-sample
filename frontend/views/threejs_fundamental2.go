@@ -8,6 +8,7 @@ import (
 	"app/frontend/lib/threejs/geometries"
 	"app/frontend/lib/threejs/lights"
 	"app/frontend/lib/threejs/materials"
+	"app/frontend/lib/threejs/stats"
 	"fmt"
 	"syscall/js"
 
@@ -26,6 +27,7 @@ type Fundamental2 struct {
 
 	controls controls.OrbitControls
 	gui      datgui.GUI
+	stats    stats.Stats
 
 	callbacks threejs.CallbackRepository
 
@@ -75,6 +77,7 @@ func (c *Fundamental2) Unmount() {
 }
 
 func (c *Fundamental2) initSceneAndRenderer() {
+
 	// Renderer
 	renderer := threejs.NewWebGLRenderer(map[string]interface{}{
 		"canvas":    js.Global().Get("document").Call("querySelector", "#c"),
@@ -109,6 +112,11 @@ func (c *Fundamental2) initSceneAndRenderer() {
 	// GUI
 	gui := datgui.NewGUI()
 	c.gui = gui
+
+	// Stats
+	stats := stats.NewStats()
+	js.Global().Get("document").Get("body").Call("appendChild", stats.DomElement())
+	c.stats = stats
 
 	// Light
 	const (
@@ -147,6 +155,8 @@ func (c *Fundamental2) animate(this js.Value, args []js.Value) interface{} {
 
 	c.controls.Update()
 	c.renderer.Render(c.scene, c.camera)
+
+	c.stats.Update()
 
 	return nil
 }

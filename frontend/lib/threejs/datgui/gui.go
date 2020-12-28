@@ -32,7 +32,9 @@ type GUI interface {
 	JSValue() js.Value
 
 	AddFolder(name string) GUI
+
 	Add(object js.Value, property string, min float64, max float64) Controller
+	AddSimply(object js.Value, property string) Controller
 	AddColor(object map[string]interface{}, property string) Controller
 
 	Open()
@@ -92,10 +94,17 @@ func (c *guiImp) AddFolder(name string) GUI {
 	)
 }
 
-// AddFolder adds a new color controller to the GUI.
+// Add adds a new object...
 func (c *guiImp) Add(object js.Value, property string, min float64, max float64) Controller {
 	return newControllerFromJSValue(
 		c.Call("add", object, property, min, max),
+	)
+}
+
+// AddSimply adds a new object as simple.
+func (c *guiImp) AddSimply(object js.Value, property string) Controller {
+	return newControllerFromJSValue(
+		c.Call("add", object, property),
 	)
 }
 

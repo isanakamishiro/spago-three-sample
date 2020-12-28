@@ -4,11 +4,18 @@ import (
 	"syscall/js"
 )
 
-// Object3D is interface for threejs.Object3D object
+// Object3D is interface for threejs.Object3D object.
+// This is the base class for most objects in three.js and provides a set of properties
+// and methods for manipulating objects in 3D space.
+//
+// Note that this can be used for grouping objects via the .add( object ) method
+// which adds the object as a child, however it is better to use Group for this.
 type Object3D interface {
 	EventDispatcher
 
 	JSValue() js.Value
+
+	Add(o Object3D)
 
 	ID() int
 	UUID() string
@@ -107,14 +114,29 @@ type defaultObject3D struct {
 	js.Value
 }
 
-// NewDefaultObject3D is factory method for Object3D.
-func NewDefaultObject3D(delegater js.Value) Object3D {
+// NewObject3D is factory method for Object3D.
+func NewObject3D() Object3D {
+	return NewObject3DFromJSValue(GetJsObject("Object3D").New())
+}
+
+// NewObject3DFromJSValue is factory method for Object3D.
+func NewObject3DFromJSValue(delegater js.Value) Object3D {
 	return &defaultObject3D{Value: delegater}
 }
 
 // JSValue is ...
 func (od *defaultObject3D) JSValue() js.Value {
 	return od.Value
+}
+
+// Add adds object as child of this object.
+// An arbitrary number of objects may be added.
+// Any current parent on an object passed in here will be removed,
+// since an object can have at most one parent.
+//
+// See Group for info on manually grouping objects.
+func (od *defaultObject3D) Add(o Object3D) {
+	od.Call("add", o.JSValue())
 }
 
 // CastShadow is ...

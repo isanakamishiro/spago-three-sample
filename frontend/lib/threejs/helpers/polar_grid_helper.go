@@ -12,7 +12,7 @@ type PolarGridHelper struct {
 // NewPolarGridHelper is factory method for PolarGridHelper.
 func NewPolarGridHelper(radius float64, radials float64) *PolarGridHelper {
 	return &PolarGridHelper{
-		threejs.NewDefaultObject3D(
+		threejs.NewObject3DFromJSValue(
 			threejs.GetJsObject("PolarGridHelper").New(radius, radials),
 		),
 	}

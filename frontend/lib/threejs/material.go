@@ -14,6 +14,9 @@ type MaterialParameters interface {
 type Material interface {
 	JSValue() js.Value
 
+	DepthTest() bool
+	SetDepthTest(v bool)
+
 	// AlphaTest() float64
 	// SetAlphaTest(v float64)
 	// BlendDst() BlendingDstFactor
@@ -40,8 +43,6 @@ type Material interface {
 	// SetColorWrite(v bool)
 	// DepthFunc() DepthModes
 	// SetDepthFunc(v DepthModes)
-	// DepthTest() bool
-	// SetDepthTest(v bool)
 	// DepthWrite() bool
 	// SetDepthWrite(v bool)
 	// Dithering() bool
@@ -116,6 +117,16 @@ func NewDefaultMaterialFromJSValue(value js.Value) Material {
 // JSValue is ...
 func (m *defaultMaterialImpl) JSValue() js.Value {
 	return m.Value
+}
+
+// DepthTest is ...
+func (m *defaultMaterialImpl) DepthTest() bool {
+	return m.Get("depthTest").Bool()
+}
+
+// SetDepthTest is ...
+func (m *defaultMaterialImpl) SetDepthTest(b bool) {
+	m.Set("depthTest", b)
 }
 
 // func (mm *MaterialImpl) AlphaTest() float64 {

@@ -16,13 +16,13 @@ type meshImpl struct {
 // NewMesh is factory method for MeshImpl.
 func NewMesh(geometry Geometry, material Material) Mesh {
 	return &meshImpl{
-		NewDefaultObject3D(GetJsObject("Mesh").New(geometry.JSValue(), material.JSValue())),
+		NewObject3DFromJSValue(GetJsObject("Mesh").New(geometry.JSValue(), material.JSValue())),
 	}
 }
 
 // NewMeshFromJSValue is factory method for MeshImpl.
 func NewMeshFromJSValue(value js.Value) Mesh {
 	return &meshImpl{
-		NewDefaultObject3D(value),
+		NewObject3DFromJSValue(value),
 	}
 }

@@ -23,12 +23,12 @@ type perspectiveCameraImp struct {
 
 // NewPerspectiveCamera is factory method for PerspectiveCamera.
 func NewPerspectiveCamera(fov float64, aspect float64, near float64, far float64) PerspectiveCamera {
-	return &perspectiveCameraImp{threejs.NewDefaultObject3D(threejs.GetJsObject("PerspectiveCamera").New(fov, aspect, near, far))}
+	return &perspectiveCameraImp{threejs.NewObject3DFromJSValue(threejs.GetJsObject("PerspectiveCamera").New(fov, aspect, near, far))}
 }
 
 // NewPerspectiveCameraFromJSValue is ...
 func NewPerspectiveCameraFromJSValue(value js.Value) PerspectiveCamera {
-	return &perspectiveCameraImp{threejs.NewDefaultObject3D(value)}
+	return &perspectiveCameraImp{threejs.NewObject3DFromJSValue(value)}
 }
 
 // Aspect is ...

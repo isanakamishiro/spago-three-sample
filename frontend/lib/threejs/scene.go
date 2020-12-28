@@ -12,6 +12,7 @@ type Scene interface {
 	SetAutoUpdate(v bool)
 	Background() js.Value
 	SetBackground(v js.Value)
+	SetBackgroundColor(c Color)
 
 	Add(v Object3D)
 	AddLight(v Light)
@@ -27,7 +28,7 @@ type sceneImpl struct {
 func NewScene() Scene {
 
 	return &sceneImpl{
-		NewDefaultObject3D(
+		NewObject3DFromJSValue(
 			GetJsObject("Scene").New(),
 		),
 	}
@@ -51,6 +52,11 @@ func (ss *sceneImpl) Background() js.Value {
 // SetBackground is ...
 func (ss *sceneImpl) SetBackground(v js.Value) {
 	ss.JSValue().Set("background", v)
+}
+
+// SetBackgroundColor is ...
+func (ss *sceneImpl) SetBackgroundColor(c Color) {
+	ss.JSValue().Set("background", c.JSValue())
 }
 
 func (ss *sceneImpl) Add(v Object3D) {

@@ -23,7 +23,7 @@ func NewBoxBufferGeometry(
 	widthSegments int, heightSegments int, depthSegments int,
 ) PlaneBufferGeometry {
 
-	return planeBufferGeometryImp{
+	return &boxBufferGeometryImp{
 		threejs.NewDefaultBufferGeometryFromJSValue(
 			threejs.GetJsObject("BoxBufferGeometry").New(
 				width, height, depth, widthSegments, heightSegments, depthSegments),

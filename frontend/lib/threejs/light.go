@@ -26,7 +26,7 @@ type defaultLightImp struct {
 // Note that this is not intended to be called directly (use one of derived classes instead).
 func NewDefaultLightFromJSValue(value js.Value) Light {
 	return &defaultLightImp{
-		NewDefaultObject3D(value),
+		NewObject3DFromJSValue(value),
 	}
 }
 

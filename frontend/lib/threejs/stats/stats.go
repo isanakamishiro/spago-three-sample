@@ -1,4 +1,4 @@
-package datgui
+package stats
 
 import (
 	"app/frontend/lib/threejs"
@@ -6,140 +6,70 @@ import (
 	"syscall/js"
 )
 
-const guiModulePath = "./assets/threejs/ex/jsm/libs/dat.gui.module.js"
+const statsModulePath = "./assets/threejs/ex/jsm/libs/stats.module.js"
 
-var guiModule js.Value
+var statsModule js.Value
 
 func init() {
 
-	m := threejs.LoadModule([]string{"GUI"}, guiModulePath)
+	m := threejs.LoadModule([]string{"Stats"}, statsModulePath)
 	if len(m) == 0 {
-		log.Fatal("GUI module could not be loaded.")
+		log.Fatal("Stats module could not be loaded.")
 	}
-	guiModule = m[0]
+	statsModule = m[0]
 }
 
-// Controller is an "abstract" class that represents a given property of an object.
-type Controller interface {
-	Name(name string) Controller
-
-	OnChange(fn js.Func) Controller
-}
-
-// GUI is A lightweight controller library for JavaScript.
-// It allows you to easily manipulate variables and fire functions on the fly.
-type GUI interface {
+// Stats is JavaScript Performance Monitor
+// This class provides a simple info box that will help you monitor your code performance.
+//
+// FPS Frames rendered in the last second. The higher the number the better.
+// MS Milliseconds needed to render a frame. The lower the number the better.
+// MB MBytes of allocated memory. (Run Chrome with --enable-precise-memory-info)
+// CUSTOM User-defined panel support.
+type Stats interface {
 	JSValue() js.Value
 
-	AddFolder(name string) GUI
-	Add(object js.Value, property string, min float64, max float64) Controller
-	AddColor(object map[string]interface{}, property string) Controller
+	ShowPanel(panel int)
+	DomElement() js.Value
 
-	Open()
-	Close()
-
-	Hide()
-	Show()
-
-	// add() Controller
-	// add
+	Begin()
+	End()
+	Update()
 }
 
-// contollerImp is default implementation of Controller
-type contollerImp struct {
+// statsImp is default implementation of GUI
+type statsImp struct {
 	js.Value
 }
 
-// guiImp is default implementation of GUI
-type guiImp struct {
-	js.Value
-}
-
-// NewGUI is ...
-func NewGUI() GUI {
-	return &guiImp{
-		Value: guiModule.New(),
+// NewStats is ...
+func NewStats() Stats {
+	return &statsImp{
+		Value: statsModule.New(),
 	}
 }
 
-// newGUIFromJSValue is ...
-func newGUIFromJSValue(v js.Value) GUI {
-	return &guiImp{
-		Value: v,
-	}
+// ShowPanel is ...
+func (c *statsImp) ShowPanel(panel int) {
+	c.Call("showPanel", panel)
 }
 
-// newControllerFromJSValue is ...
-func newControllerFromJSValue(v js.Value) Controller {
-	return &contollerImp{
-		Value: v,
-	}
+// DomElement is ...
+func (c *statsImp) DomElement() js.Value {
+	return c.Get("dom")
 }
 
-//
-// GUI method
-//
-
-// JSValue return the javascript object
-func (c *guiImp) JSValue() js.Value {
-	return c.Value
+// Begin is ...
+func (c *statsImp) Begin() {
+	c.Call("begin")
 }
 
-// AddFolder adds a new color controller to the GUI.
-func (c *guiImp) AddFolder(name string) GUI {
-	return newGUIFromJSValue(
-		c.Call("addFolder", name),
-	)
+// End is ...
+func (c *statsImp) End() {
+	c.Call("end")
 }
 
-// AddFolder adds a new color controller to the GUI.
-func (c *guiImp) Add(object js.Value, property string, min float64, max float64) Controller {
-	return newControllerFromJSValue(
-		c.Call("add", object, property, min, max),
-	)
-}
-
-// AddColor adds a new color controller to the GUI.
-func (c *guiImp) AddColor(object map[string]interface{}, property string) Controller {
-	return newControllerFromJSValue(
-		c.Call("addColor", object, property),
-	)
-}
-
-// Open opens the GUI.
-func (c *guiImp) Open() {
-	c.Call("open")
-}
-
-// Close closes the GUI.
-func (c *guiImp) Close() {
-	c.Call("close")
-}
-
-// Hide hides the GUI.
-func (c *guiImp) Hide() {
-	c.Call("hide")
-}
-
-// Show shows the GUI.
-func (c *guiImp) Show() {
-	c.Call("show")
-}
-
-//
-// Contoller method
-//
-
-// Name sets the name of the controller.
-func (c *contollerImp) Name(name string) Controller {
-	return newControllerFromJSValue(
-		c.Call("name", name),
-	)
-}
-
-// OnChange specify that a function fire every time someone changes the value with this Controller.
-func (c *contollerImp) OnChange(fn js.Func) Controller {
-	return newControllerFromJSValue(
-		c.Call("onChange", fn),
-	)
+// Update is ...
+func (c *statsImp) Update() {
+	c.Call("update")
 }

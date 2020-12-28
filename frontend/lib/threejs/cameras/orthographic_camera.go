@@ -34,12 +34,12 @@ type orthographicCameraImp struct {
 // far — Camera frustum far plane.
 // Together these define the camera's viewing frustum.
 func NewOrthographicCamera(left float64, right float64, top float64, bottom float64, near float64, far float64) OrthographicCamera {
-	return &orthographicCameraImp{threejs.NewDefaultObject3D(threejs.GetJsObject("OrthographicCamera").New(left, right, top, bottom, near, far))}
+	return &orthographicCameraImp{threejs.NewObject3DFromJSValue(threejs.GetJsObject("OrthographicCamera").New(left, right, top, bottom, near, far))}
 }
 
 // NewOrthographicCameraFromJSValue is ...
 func NewOrthographicCameraFromJSValue(value js.Value) OrthographicCamera {
-	return &orthographicCameraImp{threejs.NewDefaultObject3D(value)}
+	return &orthographicCameraImp{threejs.NewObject3DFromJSValue(value)}
 }
 
 // ProjectionMatrix is ...
