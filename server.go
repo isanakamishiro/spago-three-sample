@@ -8,7 +8,7 @@ import (
 
 //go:generate rm -Rf dist/
 //go:generate sh -c "cd frontend && spago deploy ../dist"
-//go:generate cp -Rf frontend/assets dist/
+//go:generate cp -Rf frontend/assets frontend/favicon.ico frontend/serviceworker.js dist/
 
 func main() {
 	http.Handle("/", http.FileServer(http.Dir("./dist")))

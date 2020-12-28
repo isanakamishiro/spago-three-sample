@@ -4,13 +4,20 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <!-- <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" /> -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <meta name="apple-mobile-web-app-title" content="PWA-Example1" />
-    <!-- <link rel="manifest" href="manifest.json" /> -->
+    <meta name="apple-mobile-web-app-title" content="Spago-S1" />
+
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
+    <link rel="mask-icon" href="assets/favicon//safari-pinned-tab.svg" color="#5bbad5">
+    <link rel="manifest" href="assets/manifest.webmanifest">
+    <meta name="msapplication-TileColor" content="#2b5797">
+    <meta name="theme-color" content="#ffffff">
+
     <script defer src="wasm_exec.js"></script>
-    <!-- <script>
+    <script>
         if ("serviceWorker" in navigator) {
             navigator.serviceWorker
                 .register("./serviceworker.js")
@@ -18,7 +25,7 @@
                     console.log("Service Worker is registered!!");
                 });
         }
-    </script> -->
+    </script>
     <script>
         (async () => {
             const resp = await fetch("main.wasm");
@@ -39,9 +46,9 @@
 <body>
     <main style="height: 100vh;">
         <div class="loading loading-lg" style="
-          top: 50%;
-          left: 50%;
-          transform: translateY(-50%) translateX(-50%);
+            top: 50%;
+            left: 50%;
+            transform: translateY(-50%) translateX(-50%);
         "></div>
     </main>
 </body>
