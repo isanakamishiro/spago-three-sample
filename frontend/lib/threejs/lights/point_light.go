@@ -10,6 +10,38 @@ import (
 // This light can cast shadows - see PointLightShadow page for details.
 type PointLight interface {
 	threejs.Light
+
+	// Decay gets the amount the light dims along the distance of the light.
+	// In physically correct mode, decay = 2 leads to physically realistic light falloff. The default is 1.
+	Decay() float64
+
+	// SetDecay sets the amount the light dims along the distance of the light.
+	// In physically correct mode, decay = 2 leads to physically realistic light falloff. The default is 1.
+	SetDecay(v float64)
+
+	// Distance gets the distance : Default mode — When distance is zero, light does not attenuate.
+	// When distance is non-zero, light will attenuate linearly from maximum intensity
+	// at the light's position down to zero at this distance from the light.
+	Distance() float64
+
+	// SetDistance sets the distance : Default mode — When distance is zero, light does not attenuate.
+	// When distance is non-zero, light will attenuate linearly from maximum intensity
+	// at the light's position down to zero at this distance from the light.
+	SetDistance(v float64)
+
+	// Power gets the light's power.
+	// In physically correct mode, the luminous power of the light measured in lumens.
+	// Default is 4Math.PI.
+	// This is directly related to the intensity in the ratio
+	// 'power = intensity * 4pi' and changing this will also change the intensity.
+	Power() float64
+
+	// SetPower sets the light's power.
+	// In physically correct mode, the luminous power of the light measured in lumens.
+	// Default is 4Math.PI.
+	// This is directly related to the intensity in the ratio
+	// 'power = intensity * 4pi' and changing this will also change the intensity.
+	SetPower(v float64)
 }
 
 type pointLightImp struct {
@@ -26,9 +58,9 @@ func NewPointLight(
 	intensity threejs.LightIntensity,
 	distance float64,
 	decay float64,
-) AmbientLight {
+) PointLight {
 
-	return &ambientLightImp{
+	return &pointLightImp{
 		threejs.NewDefaultLightFromJSValue(
 			threejs.GetJsObject("PointLight").New(
 				float64(color),
@@ -38,4 +70,28 @@ func NewPointLight(
 			),
 		),
 	}
+}
+
+func (l *pointLightImp) Decay() float64 {
+	return l.JSValue().Get("decay").Float()
+}
+
+func (l *pointLightImp) SetDecay(v float64) {
+	l.JSValue().Set("decay", v)
+}
+
+func (l *pointLightImp) Distance() float64 {
+	return l.JSValue().Get("distance").Float()
+}
+
+func (l *pointLightImp) SetDistance(v float64) {
+	l.JSValue().Set("distance", v)
+}
+
+func (l *pointLightImp) Power() float64 {
+	return l.JSValue().Get("power").Float()
+}
+
+func (l *pointLightImp) SetPower(v float64) {
+	l.JSValue().Set("power", v)
 }

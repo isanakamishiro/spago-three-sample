@@ -104,8 +104,15 @@ type Object3D interface {
 	TraverseAncestors(callback js.Value)
 	TraverseVisible(callback js.Value)
 
+	// UpdateMatrix updates the local transform.
 	UpdateMatrix()
+
+	// UpdateMatrixWorld updates the global transform of the object and its descendants.
 	UpdateMatrixWorld(force bool)
+
+	// UpdateWorldMatrix updates the global transform of the object.
+	// updateParents - recursively updates global transform of ancestors.
+	// updateChildren - recursively updates global transform of descendants.
 	UpdateWorldMatrix(updateParents bool, updateChildren bool)
 }
 

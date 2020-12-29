@@ -15,6 +15,14 @@ type Renderer interface {
 	ShadowMap() *WebGLShadowMap
 
 	DomElement() js.Value
+
+	// PhysicallyCorrectLights gets whether to use physically correct lighting mode.
+	// Default is false. See the lights / physical example.
+	PhysicallyCorrectLights() bool
+
+	// SetPhysicallyCorrectLights sets whether to use physically correct lighting mode.
+	// Default is false. See the lights / physical example.
+	SetPhysicallyCorrectLights(b bool)
 }
 
 // WebGLDebug is ...
@@ -63,6 +71,14 @@ func (wglr *webGLRenderer) DomElement() js.Value {
 // ShadowMap is ...
 func (wglr *webGLRenderer) ShadowMap() *WebGLShadowMap {
 	return &WebGLShadowMap{Value: wglr.Get("shadowMap")}
+}
+
+func (wglr *webGLRenderer) PhysicallyCorrectLights() bool {
+	return wglr.Get("physicallyCorrectLights").Bool()
+}
+
+func (wglr *webGLRenderer) SetPhysicallyCorrectLights(b bool) {
+	wglr.Set("physicallyCorrectLights", b)
 }
 
 // func (wglr *WebGLRenderer) AutoClear() bool {

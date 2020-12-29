@@ -13,6 +13,9 @@ type DirectionalLight interface {
 
 	SetPosition(v *threejs.Vector3)
 	Shadow() DirectionalLightShadow
+
+	Target() threejs.Object3D
+	SetTarget(v threejs.Object3D)
 }
 
 type directionalLightImp struct {
@@ -37,4 +40,21 @@ func (l *directionalLightImp) Shadow() DirectionalLightShadow {
 
 func (l *directionalLightImp) SetPosition(v *threejs.Vector3) {
 	l.JSValue().Set("position", v.JSValue())
+}
+
+// Target gets the DirectionalLight points from its position to target.position.
+// The default position of the target is (0, 0, 0).
+// Note: For the target's position to be changed to anything other than the default,
+// it must be added to the scene using scene.add( light.target );
+func (l *directionalLightImp) Target() threejs.Object3D {
+	return threejs.NewObject3DFromJSValue(
+		l.JSValue().Get("target"),
+	)
+}
+
+// SetTarget sets the DirectionalLight points from its position to target.position.
+// It is also possible to set the target to be another object in the scene
+// (anything with a position property).
+func (l *directionalLightImp) SetTarget(v threejs.Object3D) {
+	l.JSValue().Set("target", v.JSValue())
 }
