@@ -60,6 +60,7 @@ func (c *Fundamental3) Mount() {
 
 	// first render
 	threejs.RequestAnimationFrame(c.renderFunc)
+	// jsutil.RequestAnimationFrame
 
 }
 

@@ -15,93 +15,16 @@ type Material interface {
 	JSValue() js.Value
 
 	DepthTest() bool
-	SetDepthTest(v bool)
+	SetDepthTest(b bool)
 
-	// AlphaTest() float64
-	// SetAlphaTest(v float64)
-	// BlendDst() BlendingDstFactor
-	// SetBlendDst(v BlendingDstFactor)
-	// BlendDstAlpha() float64
-	// SetBlendDstAlpha(v float64)
-	// BlendEquation() BlendingEquation
-	// SetBlendEquation(v BlendingEquation)
-	// BlendEquationAlpha() float64
-	// SetBlendEquationAlpha(v float64)
-	// BlendSrc() js.Value
-	// SetBlendSrc(v js.Value)
-	// BlendSrcAlpha() float64
-	// SetBlendSrcAlpha(v float64)
-	// Blending() Blending
-	// SetBlending(v Blending)
-	// ClipIntersection() bool
-	// SetClipIntersection(v bool)
-	// ClipShadows() bool
-	// SetClipShadows(v bool)
-	// ClippingPlanes() js.Value
-	// SetClippingPlanes(v js.Value)
-	// ColorWrite() bool
-	// SetColorWrite(v bool)
-	// DepthFunc() DepthModes
-	// SetDepthFunc(v DepthModes)
-	// DepthWrite() bool
-	// SetDepthWrite(v bool)
-	// Dithering() bool
-	// SetDithering(v bool)
-	// FlatShading() bool
-	// SetFlatShading(v bool)
-	// Fog() bool
-	// SetFog(v bool)
-	// Id() int
-	// SetId(v int)
-	// IsMaterial() bool
-	// SetIsMaterial(v bool)
-	// Lights() bool
-	// SetLights(v bool)
-	// Name() string
-	// SetName(v string)
-	// NeedsUpdate() bool
-	// SetNeedsUpdate(v bool)
-	// Opacity() float64
-	// SetOpacity(v float64)
-	// Overdraw() float64
-	// SetOverdraw(v float64)
-	// PolygonOffset() bool
-	// SetPolygonOffset(v bool)
-	// PolygonOffsetFactor() float64
-	// SetPolygonOffsetFactor(v float64)
-	// PolygonOffsetUnits() float64
-	// SetPolygonOffsetUnits(v float64)
-	// Precision() string
-	// SetPrecision(v string)
-	// PremultipliedAlpha() bool
-	// SetPremultipliedAlpha(v bool)
-	// Side() Side
-	// SetSide(v Side)
-	// Transparent() bool
-	// SetTransparent(v bool)
-	// Type() string
-	// SetType(v string)
-	// UserData() js.Value
-	// SetUserData(v js.Value)
-	// Uuid() string
-	// SetUuid(v string)
-	// VertexColors() Colors
-	// SetVertexColors(v Colors)
-	// VertexTangents() bool
-	// SetVertexTangents(v bool)
-	// Visible() bool
-	// SetVisible(v bool)
-	// AddEventListener(typ string, listener js.Value)
-	// Clone() Material
-	// Copy(material Material) Material
-	// DispatchEvent(event js.Value)
-	// Dispose()
-	// HasEventListener(typ string, listener js.Value) bool
-	// OnBeforeCompile(shader js.Value, renderer *WebGLRenderer)
-	// RemoveEventListener(typ string, listener js.Value)
-	// SetValues(values js.Value)
-	// ToJSON(meta js.Value) js.Value
-	// Update()
+	FlatShading() bool
+	SetFlatShading(b bool)
+
+	NeedsUpdate() bool
+	SetNeedsUpdate(b bool)
+
+	Side() Side
+	SetSide(v Side)
 }
 
 // MaterialImpl extend: [EventDispatcher]
@@ -127,6 +50,38 @@ func (m *defaultMaterialImpl) DepthTest() bool {
 // SetDepthTest is ...
 func (m *defaultMaterialImpl) SetDepthTest(b bool) {
 	m.Set("depthTest", b)
+}
+
+// FlatShading gets whether the material is rendered with flat shading. Default is false.
+func (m *defaultMaterialImpl) FlatShading() bool {
+	return m.Get("flatShading").Bool()
+}
+
+// SetFlatShading sets whether the material is rendered with flat shading. Default is false.
+func (m *defaultMaterialImpl) SetFlatShading(b bool) {
+	m.Set("flatShading", b)
+}
+
+// NeedsUpdate gets that the material needs to be recompiled.
+func (m *defaultMaterialImpl) NeedsUpdate() bool {
+	return m.Get("needsUpdate").Bool()
+}
+
+// SetNeedsUpdate sets that the material needs to be recompiled.
+func (m *defaultMaterialImpl) SetNeedsUpdate(b bool) {
+	m.Set("needsUpdate", b)
+}
+
+// Side gets which side of faces will be rendered - front, back or both.
+// Default is THREE.FrontSide. Other options are THREE.BackSide and THREE.DoubleSide.
+func (m *defaultMaterialImpl) Side() Side {
+	return SideOf(m.Get("side"))
+}
+
+// SetSide sets which side of faces will be rendered - front, back or both.
+// Default is THREE.FrontSide. Other options are THREE.BackSide and THREE.DoubleSide.
+func (m *defaultMaterialImpl) SetSide(v Side) {
+	m.Set("side", v.JSValue())
 }
 
 // func (mm *MaterialImpl) AlphaTest() float64 {

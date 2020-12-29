@@ -15,12 +15,8 @@ var module js.Value
 
 func init() {
 
-	// log.Printf("call threejs init.")
-
 	// module = spago.LoadModuleAs("THREE", modulePath)
 	module = LoadModuleAs("THREE", modulePath)
-
-	// log.Printf("%v\n", module)
 }
 
 // LoadModule equivalent `import {'name1', 'name2', ...} from 'url'`

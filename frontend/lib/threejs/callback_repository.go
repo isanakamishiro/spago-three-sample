@@ -25,8 +25,6 @@ func (c *callbackRepositoryImp) Register(fn func(this js.Value, args []js.Value)
 	var cb js.Func
 	cb = js.FuncOf(fn)
 
-	log.Printf("Register Callback: %v\n", cb)
-
 	c.list = append(c.list, cb)
 
 	return cb

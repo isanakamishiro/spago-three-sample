@@ -20,6 +20,19 @@ func NewMesh(geometry Geometry, material Material) Mesh {
 	}
 }
 
+// NewMeshWithMultiMaterial is factory method for MeshImpl.
+func NewMeshWithMultiMaterial(geometry Geometry, materialSlice []Material) Mesh {
+
+	var a []interface{} = make([]interface{}, len(materialSlice))
+	for i, v := range materialSlice {
+		a[i] = v.JSValue()
+	}
+
+	return &meshImpl{
+		NewObject3DFromJSValue(GetJsObject("Mesh").New(geometry.JSValue(), a)),
+	}
+}
+
 // NewMeshFromJSValue is factory method for MeshImpl.
 func NewMeshFromJSValue(value js.Value) Mesh {
 	return &meshImpl{
