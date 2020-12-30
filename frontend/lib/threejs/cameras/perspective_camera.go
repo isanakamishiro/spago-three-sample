@@ -10,9 +10,37 @@ import (
 // It is the most common projection mode used for rendering a 3D scene.
 type PerspectiveCamera interface {
 	threejs.Camera
+
+	UpdateProjectionMatrix()
+
 	Aspect() float64
 	SetAspect(v float64)
-	UpdateProjectionMatrix()
+
+	// Far gets camera frustum far plane. Default is 2000.
+	// Must be greater than the current value of near plane.
+	Far() float64
+
+	// SetFar sets camera frustum far plane. Default is 2000.
+	// Must be greater than the current value of near plane.
+	SetFar(v float64)
+
+	// Fov gets Camera frustum vertical field of view,
+	// from bottom to top of view, in degrees. Default is 50.
+	Fov() float64
+
+	// SetFov sets Camera frustum vertical field of view,
+	// from bottom to top of view, in degrees. Default is 50.
+	SetFov(v float64)
+
+	// Near gets camera frustum near plane. Default is 0.1.
+	// The valid range is greater than 0 and less than the current value of the far plane.
+	// Note that, unlike for the OrthographicCamera, 0 is not a valid value for a PerspectiveCamera's near plane.
+	Near() float64
+
+	// SetNear sets camera frustum near plane. Default is 0.1.
+	// The valid range is greater than 0 and less than the current value of the far plane.
+	// Note that, unlike for the OrthographicCamera, 0 is not a valid value for a PerspectiveCamera's near plane.
+	SetNear(v float64)
 }
 
 // perspectiveCameraImp is implementation of PerspectiveCamera
@@ -80,4 +108,28 @@ func (pc *perspectiveCameraImp) IsCamera() bool {
 // WorldDirection is ...
 func (pc *perspectiveCameraImp) WorldDirection(target *threejs.Vector3) *threejs.Vector3 {
 	return &threejs.Vector3{Value: pc.JSValue().JSValue().Call("getWorldDirection", target)}
+}
+
+func (pc *perspectiveCameraImp) Far() float64 {
+	return pc.JSValue().Get("far").Float()
+}
+
+func (pc *perspectiveCameraImp) SetFar(v float64) {
+	pc.JSValue().Set("far", v)
+}
+
+func (pc *perspectiveCameraImp) Fov() float64 {
+	return pc.JSValue().Get("fov").Float()
+}
+
+func (pc *perspectiveCameraImp) SetFov(v float64) {
+	pc.JSValue().Set("fov", v)
+}
+
+func (pc *perspectiveCameraImp) Near() float64 {
+	return pc.JSValue().Get("near").Float()
+}
+
+func (pc *perspectiveCameraImp) SetNear(v float64) {
+	pc.JSValue().Set("near", v)
 }

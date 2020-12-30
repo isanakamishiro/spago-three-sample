@@ -10,6 +10,9 @@ import (
 // This can be useful for rendering 2D scenes and UI elements, amongst other things.
 type OrthographicCamera interface {
 	threejs.Camera
+
+	UpdateProjectionMatrix()
+
 	Left() float64
 	SetLeft(v float64)
 	Right() float64
@@ -18,6 +21,10 @@ type OrthographicCamera interface {
 	SetTop(v float64)
 	Bottom() float64
 	SetBottom(v float64)
+	// Zoom gets the zoom factor of the camera. Default is 1.
+	Zoom() float64
+	// SetZoom sets the zoom factor of the camera. Default is 1.
+	SetZoom(v float64)
 }
 
 // orthographicCameraImp is implementation of OrthographicCamera.
@@ -122,6 +129,14 @@ func (oc *orthographicCameraImp) Bottom() float64 {
 // SetBottom is ...
 func (oc *orthographicCameraImp) SetBottom(v float64) {
 	oc.JSValue().Set("bottom", v)
+}
+
+func (oc *orthographicCameraImp) Zoom() float64 {
+	return oc.JSValue().Get("zoom").Float()
+}
+
+func (oc *orthographicCameraImp) SetZoom(v float64) {
+	oc.JSValue().Set("zoom", v)
 }
 
 // func (oc *OrthographicCamera) CastShadow() bool {

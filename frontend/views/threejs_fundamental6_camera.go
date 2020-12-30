@@ -23,14 +23,24 @@ import (
 type Fundamental6 struct {
 	spago.Core
 
-	camera   threejs.Camera
+	canvas js.Value
+	view1  js.Value
+	view2  js.Value
+
+	camera  threejs.Camera
+	camera2 threejs.Camera
+
+	cameraHelper *cameras.CameraHelper
+
 	scene    threejs.Scene
 	renderer threejs.Renderer
 	objects  []threejs.Object3D
 
-	controls controls.OrbitControls
-	gui      datgui.GUI
-	stats    stats.Stats
+	control  controls.OrbitControls
+	control2 controls.OrbitControls
+
+	gui   datgui.GUI
+	stats stats.Stats
 
 	callbacks threejs.CallbackRepository
 
@@ -73,12 +83,14 @@ func (c *Fundamental6) Unmount() {
 func (c *Fundamental6) initSceneAndRenderer() {
 
 	// Renderer
+	canvas := js.Global().Get("document").Call("querySelector", "#c")
 	renderer := threejs.NewWebGLRenderer(map[string]interface{}{
-		"canvas":    js.Global().Get("document").Call("querySelector", "#c"),
+		"canvas":    canvas,
 		"antialias": true,
+		// "logarithmicDepthBuffer": true,
 		// "alpha":     true,
 	})
-	renderer.SetPhysicallyCorrectLights(true)
+	c.canvas = canvas
 	c.renderer = renderer
 
 	// GUI
@@ -90,26 +102,61 @@ func (c *Fundamental6) initSceneAndRenderer() {
 	js.Global().Get("document").Get("body").Call("appendChild", stats.DomElement())
 	c.stats = stats
 
-	// Camera
-	const (
-		fov    = 45
-		aspect = 2
-		near   = 0.1
-		far    = 100
-	)
-	camera := cameras.NewPerspectiveCamera(fov, aspect, near, far)
-	camera.Position().Set2(0, 10, 20)
-	c.camera = camera
-
-	// Controls
-	controls := controls.NewOrbitControls(c.camera, c.renderer.DomElement())
-	controls.Target().Set2(0, 5, 0)
-	controls.Update()
-	c.controls = controls
-
 	// Scene
 	scene := threejs.NewScene()
 	c.scene = scene
+
+	// Camera1 / Control1
+	const (
+		fov    = 45
+		aspect = 2
+		near   = 5
+		far    = 100
+
+		left   = -1
+		right  = 1
+		top    = 1
+		bottom = -1
+	)
+	// camera := cameras.NewPerspectiveCamera(fov, aspect, near, far)
+	camera := cameras.NewOrthographicCamera(left, right, top, bottom, near, far)
+	camera.SetZoom(0.2)
+	camera.Position().Set2(0, 10, 20)
+	c.camera = camera
+
+	cameraHelper := cameras.NewCameraHelper(camera)
+	scene.Add(cameraHelper)
+	c.cameraHelper = cameraHelper
+
+	// Controls
+	view1Elem := js.Global().Get("document").Call("querySelector", "#view1")
+	c.view1 = view1Elem
+
+	// controls := controls.NewOrbitControls(c.camera, c.renderer.DomElement())
+	control := controls.NewOrbitControls(camera, view1Elem)
+	control.Target().Set2(0, 5, 0)
+	control.Update()
+	c.control = control
+
+	// Camera2 / Control2
+	camera2 := cameras.NewPerspectiveCamera(
+		60,
+		2,
+		0.1,
+		500,
+	)
+	camera2.Position().Set2(40, 10, 30)
+	camera2.LookAtXYZ(0, 5, 0)
+	c.camera2 = camera2
+
+	// Control2
+	view2Elem := js.Global().Get("document").Call("querySelector", "#view2")
+	c.view2 = view2Elem
+
+	control2 := controls.NewOrbitControls(camera2, view2Elem)
+	control2.Target().Set2(0, 5, 0)
+	control2.Update()
+	c.control2 = control2
 
 	// Texture
 	const planeSize = 40
@@ -123,8 +170,7 @@ func (c *Fundamental6) initSceneAndRenderer() {
 
 	// Objects : Plane
 	planeGeo := geometries.NewPlaneBufferGeometry(planeSize, planeSize, 1, 1)
-	// planeMat := materials.NewMeshPhongMaterial(map[string]interface{}{
-	planeMat := materials.NewMeshStandardMaterial(map[string]interface{}{
+	planeMat := materials.NewMeshPhongMaterial(map[string]interface{}{
 		"map":  texture,
 		"side": threejs.DoubleSide.JSValue(),
 	})
@@ -135,8 +181,7 @@ func (c *Fundamental6) initSceneAndRenderer() {
 	// Objects : Cube
 	const cubeSize = 4.0
 	cubeGeo := geometries.NewBoxBufferGeometry(cubeSize, cubeSize, cubeSize, 1, 1, 1)
-	// cubeMat := materials.NewMeshPhongMaterial(map[string]interface{}{
-	cubeMat := materials.NewMeshStandardMaterial(map[string]interface{}{
+	cubeMat := materials.NewMeshPhongMaterial(map[string]interface{}{
 		"color": "#8AC",
 	})
 	cubeMesh := threejs.NewMesh(cubeGeo, cubeMat)
@@ -148,108 +193,90 @@ func (c *Fundamental6) initSceneAndRenderer() {
 		sphereRadius          = 3.0
 		sphereWidthDivisions  = 32
 		sphereHeightDivisions = 16
+		numSpheres            = 20
 	)
 	sphereGeo := geometries.NewSphereBufferGeometry(sphereRadius, sphereWidthDivisions, sphereHeightDivisions)
-	// sphereMat := materials.NewMeshPhongMaterial(map[string]interface{}{
-	sphereMat := materials.NewMeshStandardMaterial(map[string]interface{}{
+	sphereMat := materials.NewMeshPhongMaterial(map[string]interface{}{
 		"color": "#CA8",
 	})
 	sphereMesh := threejs.NewMesh(sphereGeo, sphereMat)
 	sphereMesh.Position().Set2(-sphereRadius-1, sphereRadius+2, 0)
 	scene.Add(sphereMesh)
 
+	// for i := 0; i < numSpheres; i++ {
+	// 	sphereMat := materials.NewMeshPhongMaterial(map[string]interface{}{
+	// 		"color": "#CA8",
+	// 	})
+	// 	sphereMesh := threejs.NewMesh(sphereGeo, sphereMat)
+	// 	sphereMesh.Position().Set2(-sphereRadius-1, sphereRadius+2, float64(i)*sphereRadius*-2.2)
+	// 	scene.Add(sphereMesh)
+	// }
+
 	// Lights
-
-	// Ambient Light
-	// const (
-	// 	lightColor     = threejs.ColorValue(0xffffff)
-	// 	lightIntensity = threejs.LightIntensity(1)
-	// )
-	// light := lights.NewAmbientLight(lightColor, lightIntensity)
-	// scene.AddLight(light)
-
-	// Hemisphere Light
-	// const (
-	// 	skyColor       = threejs.ColorValue(0xB1E1FF)
-	// 	groundColor    = threejs.ColorValue(0xB97A20)
-	// 	lightIntensity = threejs.LightIntensity(1)
-	// )
-	// light := lights.NewHemisphereLight(skyColor, groundColor, lightIntensity)
-	// scene.AddLight(light)
-
-	// Directional Light / Point Light / Spot Light
 	const (
 		lightColor     = threejs.ColorValue(0xffffff)
 		lightIntensity = threejs.LightIntensity(1)
-		width          = 12.0
-		height         = 4.0
 	)
-	// light := lights.NewDirectionalLight(lightColor, lightIntensity)
-	light := lights.NewPointLight(lightColor, lightIntensity, 0, 1)
-	// light := lights.NewSpotLight(lightColor, lightIntensity)
-	// light := exlights.NewRectAreaLight(lightColor, lightIntensity, width, height)
-	light.SetPower(800)
-	light.SetDecay(2)
-	light.SetDistance(0)
+	light := lights.NewDirectionalLight(lightColor, lightIntensity)
 	light.Position().Set2(0, 10, 0)
-	// light.Rotation().SetX(-1.5708)
-	// light.Target().Position().Set2(-5, 0, 0)
+	light.Target().Position().Set2(-5, 0, 0)
 	scene.AddLight(light)
-	// scene.Add(light.Target())
+	scene.Add(light.Target())
 
-	// helper := lights.NewDirectionalLightHelper(light)
-	helper := lights.NewPointLightHelper(light)
-	// helper := lights.NewSpotLightHelper(light)
-	// helper := exlights.NewRectAreaLightHelper(light)
-	// light.Add(helper)
+	helper := lights.NewDirectionalLightHelper(light)
 	scene.Add(helper)
 
 	// Objects
 	c.objects = make([]threejs.Object3D, 0, 1)
 
 	// build GUI
-	jsfnUpdate := c.callbacks.Register(func(this js.Value, args []js.Value) interface{} {
-		// light.Target().UpdateMatrixWorld(true)
-		helper.Update()
-
-		return nil
-	})
-	jsfnUpdate.Invoke()
-
-	params := map[string]interface{}{
-		"color": int(lightColor),
-	}
-	gui.AddColor(params, "color").Name("color").OnChange(c.callbacks.Register(
-		func(this js.Value, args []js.Value) interface{} {
-			col := args[0].Int()
-
-			light.SetColor(threejs.NewColorFromColorValue(threejs.ColorValue(col)))
-			return nil
-		},
-	))
-	// gui.Add(light.JSValue(), "intensity", 0, 10)
-	// gui.Add(light.JSValue(), "distance", 0, 40).OnChange(jsfnUpdate)
-	// gui.Add(light.JSValue(), "angle", -3.14, 3.14).OnChange(jsfnUpdate)
-	// gui.Add(light.JSValue(), "penumbra", 0.0, 1.0).OnChange(jsfnUpdate)
-	// gui.Add(light.JSValue(), "width", 0, 20).OnChange(jsfnUpdate)
-	// gui.Add(light.JSValue(), "height", 0, 20).OnChange(jsfnUpdate)
-	// gui.Add(light.Rotation().JSValue(), "x", -math.Pi, math.Pi).Name("x rotation").OnChange(jsfnUpdate)
-	// gui.Add(light.Rotation().JSValue(), "y", -math.Pi, math.Pi).Name("y rotation").OnChange(jsfnUpdate)
-	// gui.Add(light.Rotation().JSValue(), "z", -math.Pi, math.Pi).Name("z rotation").OnChange(jsfnUpdate)
-	gui.Add(light.JSValue(), "decay", 0.0, 4.0).OnChange(jsfnUpdate)
-	gui.Add(light.JSValue(), "power", 0, 1220).OnChange(jsfnUpdate)
-
-	c.makeXYZGUI(gui, light.Position(), "position", jsfnUpdate)
-	// c.makeXYZGUI(gui, light.Target().Position(), "target", jsfnUpdate)
+	// gui.Add(camera.JSValue(), "fov", 0, 180)
+	// gui.Add(camera.JSValue(), "near", 0.000001, 50)
+	// gui.Add(camera.JSValue(), "far", 0.1, 50)
+	gui.Add(camera.JSValue(), "zoom", 0.01, 1).Listen()
 
 }
 
-func (c *Fundamental6) makeXYZGUI(gui datgui.GUI, v *threejs.Vector3, name string, onChangeFn js.Func) {
-	folder := gui.AddFolder(name)
-	folder.Add(v.JSValue(), "x", -10, 10).OnChange(onChangeFn)
-	folder.Add(v.JSValue(), "y", 0, 10).OnChange(onChangeFn)
-	folder.Add(v.JSValue(), "z", -10, 10).OnChange(onChangeFn)
-	folder.Open()
+// setScissorForElement computes scissor and sets scissor and viewport for renderer.
+func (c *Fundamental6) setScissorForElement(e js.Value) float64 {
+	pixelRatio := js.Global().Get("devicePixelRatio").Float()
+
+	canvasRect := threejs.NewRectangleFromJSValue(c.canvas.Call("getBoundingClientRect"))
+	elemRect := threejs.NewRectangleFromJSValue(e.Call("getBoundingClientRect"))
+
+	// compute a canvas relative rectangle
+	right := math.Min(elemRect.Right(), canvasRect.Right()) - canvasRect.Left()
+	left := math.Max(0, elemRect.Left()-canvasRect.Left())
+	bottom := math.Min(elemRect.Bottom(), canvasRect.Bottom()) - canvasRect.Top()
+	top := math.Max(0, elemRect.Top()-canvasRect.Top())
+
+	width := math.Min(canvasRect.Width(), right-left)
+	if width <= 0 {
+		width = 1
+	}
+	height := math.Min(canvasRect.Height(), bottom-top)
+	if height <= 0 {
+		height = 1
+	}
+
+	// setup the scissor to only render to that part of the canvas
+	positiveYUpBottom := canvasRect.Height() - bottom
+
+	c.renderer.SetScissor(
+		int(left*pixelRatio),
+		int(positiveYUpBottom*pixelRatio),
+		int(width*pixelRatio),
+		int(height*pixelRatio),
+	)
+	c.renderer.SetViewport(
+		int(left*pixelRatio),
+		int(positiveYUpBottom*pixelRatio),
+		int(width*pixelRatio),
+		int(height*pixelRatio),
+	)
+
+	// return the aspect
+	return width / height
 }
 
 // resizeRendererToDisplaySize resizes render display size.
@@ -272,27 +299,55 @@ func (c *Fundamental6) resizeRendererToDisplaySize(renderer threejs.Renderer) (s
 func (c *Fundamental6) render(this js.Value, args []js.Value) interface{} {
 
 	if sizeChanged := c.resizeRendererToDisplaySize(c.renderer); sizeChanged {
-		canvas := c.renderer.DomElement()
-		clientWidth := canvas.Get("clientWidth").Float()
-		clientHeight := canvas.Get("clientHeight").Float()
-		c.camera.(cameras.PerspectiveCamera).SetAspect(clientWidth / clientHeight)
-		c.camera.(cameras.PerspectiveCamera).UpdateProjectionMatrix()
+		// canvas := c.renderer.DomElement()
+		// clientWidth := canvas.Get("clientWidth").Float()
+		// clientHeight := canvas.Get("clientHeight").Float()
+		// c.camera.(cameras.PerspectiveCamera).SetAspect(clientWidth / clientHeight)
+		// c.camera.(cameras.PerspectiveCamera).UpdateProjectionMatrix()
 	}
 
-	time := args[0].Float() * 0.001
-	for i, obj := range c.objects {
-		speed := 0.2 + float64(i)*0.1
-		rot := time * speed
+	// turn on the scissor
+	c.renderer.SetScissorTest(true)
+	// c.renderer.SetScissorTest(false)
 
-		obj.Rotation().SetX(rot)
-		obj.Rotation().SetY(rot)
+	// render the original view
+	{
+		aspect := c.setScissorForElement(c.view1)
+		// c.camera.(cameras.PerspectiveCamera).SetAspect(aspect)
+		// c.camera.(cameras.PerspectiveCamera).UpdateProjectionMatrix()
+		c.camera.(cameras.OrthographicCamera).SetLeft(-aspect)
+		c.camera.(cameras.OrthographicCamera).SetRight(aspect)
+		c.camera.(cameras.OrthographicCamera).UpdateProjectionMatrix()
+
+		c.cameraHelper.Update()
+
+		// don't draw the camera helper in the original view
+		c.cameraHelper.SetVisible(false)
+
+		c.scene.SetBackgroundColor(threejs.NewColorFromColorValue(threejs.ColorValue(0x000000)))
+
+		c.renderer.Render(c.scene, c.camera)
+
 	}
 
-	c.controls.Update()
-	c.renderer.Render(c.scene, c.camera)
+	// render from the 2nd camera
+	{
+		aspect := c.setScissorForElement(c.view2)
+
+		// adjust the camera for this aspect
+		c.camera2.(cameras.PerspectiveCamera).SetAspect(aspect)
+		c.camera2.(cameras.PerspectiveCamera).UpdateProjectionMatrix()
+
+		// don't draw the camera helper in the original view
+		c.cameraHelper.SetVisible(true)
+
+		c.scene.SetBackgroundColor(threejs.NewColorFromColorValue(threejs.ColorValue(0x000040)))
+
+		c.renderer.Render(c.scene, c.camera2)
+
+	}
 
 	c.stats.Update()
-
 	threejs.RequestAnimationFrame(c.renderFunc)
 
 	return nil

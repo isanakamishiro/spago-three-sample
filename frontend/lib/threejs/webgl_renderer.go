@@ -23,6 +23,22 @@ type Renderer interface {
 	// SetPhysicallyCorrectLights sets whether to use physically correct lighting mode.
 	// Default is false. See the lights / physical example.
 	SetPhysicallyCorrectLights(b bool)
+
+	// SetScissor sets the scissor region from (x, y) to (x + width, y + height).
+	// (x, y) is the lower-left corner of the scissor region.
+	SetScissor(x, y, width, height int)
+
+	// GetScissorTest gets enable or disable the scissor test.
+	// When this is enabled, only the pixels within the defined scissor area will be affected by further renderer actions.
+	GetScissorTest() bool
+
+	// SetScissorTest sets enable or disable the scissor test.
+	// When this is enabled, only the pixels within the defined scissor area will be affected by further renderer actions.
+	SetScissorTest(b bool)
+
+	// SetViewport sets the viewport to render from (x, y) to (x + width, y + height).
+	// (x, y) is the lower-left corner of the region.
+	SetViewport(x, y, width, height int)
 }
 
 // WebGLDebug is ...
@@ -79,6 +95,22 @@ func (wglr *webGLRenderer) PhysicallyCorrectLights() bool {
 
 func (wglr *webGLRenderer) SetPhysicallyCorrectLights(b bool) {
 	wglr.Set("physicallyCorrectLights", b)
+}
+
+func (wglr *webGLRenderer) SetScissor(x, y, width, height int) {
+	wglr.Call("setScissor", x, y, width, height)
+}
+
+func (wglr *webGLRenderer) GetScissorTest() bool {
+	return wglr.Call("getScissorTest").Bool()
+}
+
+func (wglr *webGLRenderer) SetScissorTest(b bool) {
+	wglr.Call("setScissorTest", b)
+}
+
+func (wglr *webGLRenderer) SetViewport(x, y, width, height int) {
+	wglr.Call("setViewport", x, y, width, height)
 }
 
 // func (wglr *WebGLRenderer) AutoClear() bool {

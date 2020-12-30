@@ -21,5 +21,7 @@ func main() {
 	// spago.RenderBody(views.NewFundamental5())
 	spago.RenderBody(views.NewFundamental6())
 
+	// spago.RenderBody(views.NewTestView())
+
 	select {}
 }

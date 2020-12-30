@@ -21,9 +21,15 @@ func init() {
 
 // Controller is an "abstract" class that represents a given property of an object.
 type Controller interface {
+
+	// Name sets the name of the controller.
 	Name(name string) Controller
 
+	// OnChange specify that a function fire every time someone changes the value with this Controller.
 	OnChange(fn js.Func) Controller
+
+	// Listen sets controller to listen for changes on its underlying object.
+	Listen() Controller
 }
 
 // GUI is A lightweight controller library for JavaScript.
@@ -150,5 +156,11 @@ func (c *contollerImp) Name(name string) Controller {
 func (c *contollerImp) OnChange(fn js.Func) Controller {
 	return newControllerFromJSValue(
 		c.Call("onChange", fn),
+	)
+}
+
+func (c *contollerImp) Listen() Controller {
+	return newControllerFromJSValue(
+		c.Call("listen"),
 	)
 }
