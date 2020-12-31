@@ -26,6 +26,20 @@ type Color interface {
 	Hex() int
 	SetHex(hex int)
 	HexString() string
+
+	// SetRGB sets this color from RGB values.
+	//
+	// r — Red channel value between 0.0 and 1.0.
+	// g — Green channel value between 0.0 and 1.0.
+	// b — Blue channel value between 0.0 and 1.0.
+	SetRGB(r, g, b float64)
+
+	// SetHSL sets color from HSL values.
+	//
+	// h — hue value between 0.0 and 1.0
+	// s — saturation value between 0.0 and 1.0
+	// l — lightness value between 0.0 and 1.0
+	SetHSL(h, s, l float64)
 }
 
 // Color extend: []
@@ -91,6 +105,14 @@ func (cc *colorImp) SetHex(hex int) {
 // HexString is ...
 func (cc *colorImp) HexString() string {
 	return cc.Call("getHexString").String()
+}
+
+func (cc *colorImp) SetRGB(r, g, b float64) {
+	cc.Call("setRGB", r, g, b)
+}
+
+func (cc *colorImp) SetHSL(h, s, l float64) {
+	cc.Call("setHSL", h, s, l)
 }
 
 // func (cc *Color) B() float64 {

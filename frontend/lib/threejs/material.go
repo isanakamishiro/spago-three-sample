@@ -17,14 +17,35 @@ type Material interface {
 	DepthTest() bool
 	SetDepthTest(b bool)
 
+	// FlatShading gets whether the material is rendered with flat shading. Default is false.
 	FlatShading() bool
+
+	// SetFlatShading sets whether the material is rendered with flat shading. Default is false.
 	SetFlatShading(b bool)
 
+	// NeedsUpdate gets that the material needs to be recompiled.
 	NeedsUpdate() bool
+
+	// SetFlatShading sets whether the material is rendered with flat shading. Default is false.
 	SetNeedsUpdate(b bool)
 
+	// Side gets which side of faces will be rendered - front, back or both.
+	// Default is THREE.FrontSide. Other options are THREE.BackSide and THREE.DoubleSide.
 	Side() Side
+
+	// SetSide sets which side of faces will be rendered - front, back or both.
+	// Default is THREE.FrontSide. Other options are THREE.BackSide and THREE.DoubleSide.
 	SetSide(v Side)
+
+	// Opacity gets float in the range of 0.0 - 1.0 indicating how transparent the material is. A value of 0.0 indicates fully transparent, 1.0 is fully opaque.
+	// If the material's transparent property is not set to true, the material will remain fully opaque and this value will only affect its color.
+	// Default is 1.0.
+	Opacity() float64
+
+	// SetOpacity sets float in the range of 0.0 - 1.0 indicating how transparent the material is. A value of 0.0 indicates fully transparent, 1.0 is fully opaque.
+	// If the material's transparent property is not set to true, the material will remain fully opaque and this value will only affect its color.
+	// Default is 1.0.
+	SetOpacity(v float64)
 }
 
 // MaterialImpl extend: [EventDispatcher]
@@ -82,6 +103,14 @@ func (m *defaultMaterialImpl) Side() Side {
 // Default is THREE.FrontSide. Other options are THREE.BackSide and THREE.DoubleSide.
 func (m *defaultMaterialImpl) SetSide(v Side) {
 	m.Set("side", v.JSValue())
+}
+
+func (m *defaultMaterialImpl) Opacity() float64 {
+	return m.Get("opacity").Float()
+}
+
+func (m *defaultMaterialImpl) SetOpacity(v float64) {
+	m.Set("opacity", v)
 }
 
 // func (mm *MaterialImpl) AlphaTest() float64 {

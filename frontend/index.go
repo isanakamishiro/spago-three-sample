@@ -19,7 +19,9 @@ func main() {
 	// spago.RenderBody(views.NewFundamental3())
 	// spago.RenderBody(views.NewFundamental4())
 	// spago.RenderBody(views.NewFundamental5())
-	spago.RenderBody(views.NewFundamental6())
+	// spago.RenderBody(views.NewFundamental6())
+	// spago.RenderBody(views.NewFundamental7())
+	spago.RenderBody(views.NewFundamental8())
 
 	// spago.RenderBody(views.NewTestView())
 
