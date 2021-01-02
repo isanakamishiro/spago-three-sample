@@ -23,35 +23,18 @@ type Fundamental1 struct {
 	cubes    []threejs.Mesh
 	renderer threejs.Renderer
 
-	renderID     threejs.RenderID
-	OnResizeFunc js.Func
+	callbacks threejs.CallbackRepository
+
+	renderID   threejs.RenderID
+	renderFunc js.Func
 }
 
 // NewFundamental1 is ...
 func NewFundamental1() *Fundamental1 {
 
-	return &Fundamental1{}
-}
-
-// Mount is ...
-func (c *Fundamental1) Mount() {
-
-	c.initSceneAndRenderer()
-
-	c.OnResizeFunc = js.FuncOf(c.OnResize)
-	// js.Global().Call("addEventListener", "resize", c.OnResizeFunc)
-
-	// c.OnResize(js.Null(), nil)
-	c.renderID = threejs.RequestAnimationFrame(js.FuncOf(c.animate))
-
-}
-
-// Unmount ...
-func (c *Fundamental1) Unmount() {
-
-	threejs.CancelAnimationFrame(c.renderID)
-	js.Global().Call("removeEventListener", "resize", c.OnResizeFunc)
-
+	return &Fundamental1{
+		callbacks: threejs.NewCallbackRepository(),
+	}
 }
 
 func (c *Fundamental1) initSceneAndRenderer() {
@@ -59,9 +42,7 @@ func (c *Fundamental1) initSceneAndRenderer() {
 	renderer := threejs.NewWebGLRenderer(map[string]interface{}{
 		"canvas":    js.Global().Get("document").Call("querySelector", "#c"),
 		"antialias": true,
-		// "alpha":     true,
 	})
-	// js.Global().Get("document").Get("body").Call("appendChild", c.renderer.DomElement())
 	c.renderer = renderer
 
 	// Scene
@@ -106,6 +87,34 @@ func (c *Fundamental1) initSceneAndRenderer() {
 
 }
 
+// Mount is ...
+func (c *Fundamental1) Mount() {
+
+	// shortcut of js.Funcs
+	c.renderFunc = c.callbacks.Register(c.animate)
+
+	// initialize objects
+	c.initSceneAndRenderer()
+
+	// first render
+	c.renderID = threejs.RequestAnimationFrame(c.renderFunc)
+
+}
+
+// Unmount ...
+func (c *Fundamental1) Unmount() {
+
+	// Cancel rendering
+	threejs.CancelAnimationFrame(c.renderID)
+
+	// Release all js.Funcs
+	c.callbacks.ReleaseAll()
+
+	// Dispose current rendering context
+	c.renderer.Dispose()
+
+}
+
 func (c *Fundamental1) animate(this js.Value, args []js.Value) interface{} {
 
 	time := args[0].Float()
@@ -128,26 +137,9 @@ func (c *Fundamental1) animate(this js.Value, args []js.Value) interface{} {
 
 	c.renderer.Render(c.scene, c.camera)
 
-	c.renderID = threejs.RequestAnimationFrame(js.FuncOf(c.animate))
-	// c.renderID = js.Global().Call("requestAnimationFrame", js.FuncOf(c.animate))
+	c.renderID = threejs.RequestAnimationFrame(c.renderFunc)
 
 	return nil
-}
-
-// OnResize ...
-func (c *Fundamental1) OnResize(this js.Value, args []js.Value) interface{} {
-	width := js.Global().Get("innerWidth").Float()
-	height := js.Global().Get("innerHeight").Float()
-
-	c.renderer.SetPixelRatio(js.Global().Get("devicePixelRatio").Float())
-	c.renderer.SetSize(width, height, true)
-
-	c.camera.(cameras.PerspectiveCamera).SetAspect(width / height)
-
-	// println("Fire OnResize")
-
-	return nil
-
 }
 
 func (c *Fundamental1) makeInstance(geometry threejs.Geometry, color int, x float64) threejs.Mesh {

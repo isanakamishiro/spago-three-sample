@@ -64,15 +64,21 @@ func (c *Fundamental8) Mount() {
 	c.initSceneAndRenderer()
 
 	// first render
-	threejs.RequestAnimationFrame(c.renderFunc)
+	c.renderID = threejs.RequestAnimationFrame(c.renderFunc)
 
 }
 
 // Unmount ...
 func (c *Fundamental8) Unmount() {
 
+	// Cancel rendering
+	threejs.CancelAnimationFrame(c.renderID)
+
 	// Release all js.Funcs
 	c.callbacks.ReleaseAll()
+
+	// Dispose current rendering context
+	c.renderer.Dispose()
 
 }
 
@@ -88,13 +94,16 @@ func (c *Fundamental8) initSceneAndRenderer() {
 	c.renderer = renderer
 
 	// GUI
-	gui := datgui.NewGUI()
+	gui := datgui.NewGUIWithParameter(map[string]interface{}{
+		"autoPlace": false,
+	})
+	// js.Global().Get("document").Call("querySelector", "#gui").Call("appendChild", gui.DomElement())
 	c.gui = gui
 
 	// Stats
-	stats := stats.NewStats()
-	js.Global().Get("document").Get("body").Call("appendChild", stats.DomElement())
-	c.stats = stats
+	// stats := stats.NewStats()
+	// js.Global().Get("document").Get("body").Call("appendChild", stats.DomElement())
+	// c.stats = stats
 
 	// Camera
 	const (
@@ -115,6 +124,7 @@ func (c *Fundamental8) initSceneAndRenderer() {
 
 	// Scene
 	scene := threejs.NewScene()
+	scene.SetBackgroundColor(threejs.NewColorFromColorName("black"))
 	c.scene = scene
 
 	// Texture
@@ -152,6 +162,18 @@ func (c *Fundamental8) initSceneAndRenderer() {
 	cubeMesh.SetReceiveShadow(true)
 	scene.Add(cubeMesh)
 
+	// Objects : Room
+	const roomSize = 30.0
+	roomGeo := geometries.NewBoxBufferGeometry(roomSize, roomSize, roomSize, 1, 1, 1)
+	roomMat := materials.NewMeshPhongMaterial(map[string]interface{}{
+		"color": "#CCC",
+		"side":  threejs.BackSide.JSValue(),
+	})
+	roomMesh := threejs.NewMesh(roomGeo, roomMat)
+	roomMesh.Position().Set2(0, cubeSize/2-0.1, 0)
+	roomMesh.SetReceiveShadow(true)
+	scene.Add(roomMesh)
+
 	// Objects : Sphere
 	const (
 		sphereRadius          = 3.0
@@ -171,24 +193,37 @@ func (c *Fundamental8) initSceneAndRenderer() {
 
 	// Lights
 
-	// Directional Light
+	// // Directional Light
+	// const (
+	// 	lightColor     = threejs.ColorValue(0xffffff)
+	// 	lightIntensity = threejs.LightIntensity(1)
+	// 	width          = 12.0
+	// 	height         = 4.0
+	// )
+	// light := lights.NewDirectionalLight(lightColor, lightIntensity)
+	// light.SetCastShadow(true)
+	// light.Position().Set2(0, 10, 0)
+	// light.Target().Position().Set2(-4, 0, -4)
+	// scene.AddLight(light)
+	// scene.Add(light.Target())
+
+	// cameraHelper := cameras.NewCameraHelper(light.Shadow().Camera())
+	// scene.Add(cameraHelper)
+
+	// helper := lights.NewDirectionalLightHelper(light)
+	// scene.Add(helper)
+
+	// Point Light
 	const (
 		lightColor     = threejs.ColorValue(0xffffff)
 		lightIntensity = threejs.LightIntensity(1)
-		width          = 12.0
-		height         = 4.0
 	)
-	light := lights.NewDirectionalLight(lightColor, lightIntensity)
+	light := lights.NewPointLight(lightColor, lightIntensity, 0, 1)
 	light.SetCastShadow(true)
 	light.Position().Set2(0, 10, 0)
-	light.Target().Position().Set2(-4, 0, -4)
 	scene.AddLight(light)
-	scene.Add(light.Target())
 
-	cameraHelper := cameras.NewCameraHelper(light.Shadow().Camera())
-	scene.Add(cameraHelper)
-
-	helper := lights.NewDirectionalLightHelper(light)
+	helper := lights.NewPointLightHelper(light)
 	scene.Add(helper)
 
 	// Objects
@@ -196,8 +231,12 @@ func (c *Fundamental8) initSceneAndRenderer() {
 
 	// build GUI
 	jsfnUpdate := c.callbacks.Register(func(this js.Value, args []js.Value) interface{} {
-		light.Target().UpdateMatrixWorld(true)
+		// light.Target().UpdateMatrixWorld(true)
 		helper.Update()
+
+		// light.Shadow().Camera().UpdateProjectionMatrix()
+
+		// cameraHelper.Update()
 
 		return nil
 	})
@@ -205,7 +244,8 @@ func (c *Fundamental8) initSceneAndRenderer() {
 
 	params := map[string]interface{}{
 		"color": int(lightColor),
-		"width": light.Shadow().Camera().Right() * 2,
+		// "width":  light.Shadow().Camera().Right() * 2,
+		// "height": light.Shadow().Camera().Top() * 2,
 	}
 	gui.AddColor(params, "color").Name("color").OnChange(c.callbacks.Register(
 		func(this js.Value, args []js.Value) interface{} {
@@ -215,15 +255,42 @@ func (c *Fundamental8) initSceneAndRenderer() {
 			return nil
 		},
 	))
-	gui.Add(light.JSValue(), "intensity", 0, 10)
-	folder := gui.AddFolder("Shadow Camera")
-	folder.Open()
-	folder.Add(js.ValueOf(params), "width", 1, 100).Name("width")
-	// gui.Add(light.JSValue(), "decay", 0.0, 4.0).OnChange(jsfnUpdate)
-	// gui.Add(light.JSValue(), "power", 0, 1220).OnChange(jsfnUpdate)
+	gui.Add(light.JSValue(), "intensity", 0, 2)
+	gui.Add(light.JSValue(), "distance", 0, 40).OnChange(jsfnUpdate)
+
+	{
+		folder := gui.AddFolder("Shadow Camera")
+		folder.Open()
+		// folder.Add(js.ValueOf(params), "width", 1, 100).Name("width").OnChange(
+		// 	c.callbacks.Register(func(this js.Value, args []js.Value) interface{} {
+		// 		w := args[0].Float()
+
+		// 		light.Shadow().Camera().SetRight(w / 2)
+		// 		light.Shadow().Camera().SetLeft(w / -2)
+
+		// 		jsfnUpdate.Invoke()
+
+		// 		return nil
+		// 	}))
+		// folder.Add(js.ValueOf(params), "height", 1, 100).Name("height").OnChange(
+		// 	c.callbacks.Register(func(this js.Value, args []js.Value) interface{} {
+		// 		w := args[0].Float()
+
+		// 		light.Shadow().Camera().SetTop(w / 2)
+		// 		light.Shadow().Camera().SetBottom(w / -2)
+
+		// 		jsfnUpdate.Invoke()
+
+		// 		return nil
+		// 	}))
+		folder.Add(light.Shadow().Camera().JSValue(), "near", 0.1, 50).OnChange(jsfnUpdate)
+		folder.Add(light.Shadow().Camera().JSValue(), "far", 0.1, 50).OnChange(jsfnUpdate)
+		// folder.Add(light.Shadow().Camera().JSValue(), "zoom", 0.01, 1.5).OnChange(jsfnUpdate)
+
+	}
 
 	c.makeXYZGUI(gui, light.Position(), "position", jsfnUpdate)
-	c.makeXYZGUI(gui, light.Target().Position(), "target", jsfnUpdate)
+	// c.makeXYZGUI(gui, light.Target().Position(), "target", jsfnUpdate)
 
 }
 
@@ -274,9 +341,9 @@ func (c *Fundamental8) render(this js.Value, args []js.Value) interface{} {
 	c.control.Update()
 	c.renderer.Render(c.scene, c.camera)
 
-	c.stats.Update()
+	// c.stats.Update()
 
-	threejs.RequestAnimationFrame(c.renderFunc)
+	c.renderID = threejs.RequestAnimationFrame(c.renderFunc)
 
 	return nil
 }

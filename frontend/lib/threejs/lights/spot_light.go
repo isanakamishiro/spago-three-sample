@@ -11,6 +11,9 @@ import (
 type SpotLight interface {
 	threejs.Light
 
+	// Shadow gets a SpotLightShadow used to calculate shadows for this light.
+	Shadow() SpotLightShadow
+
 	// Angle gets maximum extent of the spotlight, in radians, from its direction.
 	// Should be no more than Math.PI/2. The default is Math.PI/3.
 	Angle() float64
@@ -90,6 +93,12 @@ func NewSpotLight(
 			),
 		),
 	}
+}
+
+func (l *spotLightImp) Shadow() SpotLightShadow {
+	return newSpotLightShadowFromJSValue(
+		l.JSValue().Get("shadow"),
+	)
 }
 
 func (l *spotLightImp) Angle() float64 {

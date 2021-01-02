@@ -9,7 +9,25 @@ var urlsToCache = [
     "./favicon.ico",
     "./serviceworker.js",
     "./assets/app.css",
-    "./assets/threejs/build/three.module.js"
+    "./assets/threejs/build/three.module.js",
+    "https://cdn.jsdelivr.net/npm/uikit@3.6.5/dist/css/uikit.min.css",
+    "https://cdn.jsdelivr.net/npm/uikit@3.6.5/dist/js/uikit.min.js",
+    "https://cdn.jsdelivr.net/npm/uikit@3.6.5/dist/js/uikit-icons.min.js",
+    "./assets/threejs/ex/jsm/controls/OrbitControls.js",
+    "./assets/threejs/ex/jsm/effects/OutlineEffect.js",
+    "./assets/threejs/ex/jsm/animation/MMDAnimationHelper.js",
+    "./assets/threejs/ex/jsm/animation/MMDPhysics.js",
+    "./assets/threejs/ex/jsm/animation/CCDIKSolver.js",
+    "./assets/threejs/ex/jsm/loaders/MMDLoader.js",
+    "./assets/threejs/ex/jsm/libs/mmdparser.module.js",
+    "./assets/threejs/ex/jsm/loaders/TGALoader.js",
+    "./assets/threejs/ex/jsm/libs/dat.gui.module.js",
+    "./assets/threejs/ex/jsm/libs/stats.module.js",
+    "./assets/threejs/ex/js/libs/ammo.wasm.js",
+    "./assets/threejs/ex/js/libs/ammo.wasm.wasm"
+    // "./assets/models/mmd/miku/miku_v2.pmd",
+    // "./assets/models/mmd/miku/eyeM2.bmp",
+    // "./assets/models/mmd/vmds/wavefile_v2.vmd"
 ];
 
 // 残したいキャッシュのバージョンをこの配列に入れる

@@ -2,8 +2,22 @@ package effects
 
 import (
 	"app/frontend/lib/threejs"
+	"log"
 	"syscall/js"
 )
+
+const outlineEffectModulePath = "./assets/threejs/ex/jsm/effects/OutlineEffect.js"
+
+var outlineEffectModule js.Value
+
+func init() {
+
+	m := threejs.LoadModule([]string{"OutlineEffect"}, outlineEffectModulePath)
+	if len(m) == 0 {
+		log.Fatal("outlineEffect module could not be loaded.")
+	}
+	outlineEffectModule = m[0]
+}
 
 // OutlineEffect is ...
 type OutlineEffect struct {
@@ -11,8 +25,8 @@ type OutlineEffect struct {
 }
 
 // NewOutlineEffect is ...
-func NewOutlineEffect(outlineEffectModule js.Value, renderer threejs.Renderer) *OutlineEffect {
-	return &OutlineEffect{Value: outlineEffectModule.Get("OutlineEffect").New(renderer.JSValue())}
+func NewOutlineEffect(renderer threejs.Renderer) *OutlineEffect {
+	return &OutlineEffect{Value: outlineEffectModule.New(renderer.JSValue())}
 }
 
 // Render is ...

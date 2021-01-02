@@ -72,15 +72,21 @@ func (c *Fundamental7) Mount() {
 	c.initSceneAndRenderer()
 
 	// first render
-	threejs.RequestAnimationFrame(c.renderFunc)
+	c.renderID = threejs.RequestAnimationFrame(c.renderFunc)
 
 }
 
 // Unmount ...
 func (c *Fundamental7) Unmount() {
 
+	// Cancel rendering
+	threejs.CancelAnimationFrame(c.renderID)
+
 	// Release all js.Funcs
 	c.callbacks.ReleaseAll()
+
+	// Dispose current rendering context
+	c.renderer.Dispose()
 
 }
 
@@ -97,13 +103,16 @@ func (c *Fundamental7) initSceneAndRenderer() {
 	c.renderer = renderer
 
 	// GUI
-	gui := datgui.NewGUI()
+	gui := datgui.NewGUIWithParameter(map[string]interface{}{
+		"autoPlace": false,
+	})
+	// js.Global().Get("document").Call("querySelector", "#gui").Call("appendChild", gui.DomElement())
 	c.gui = gui
 
 	// Stats
-	stats := stats.NewStats()
-	js.Global().Get("document").Get("body").Call("appendChild", stats.DomElement())
-	c.stats = stats
+	// stats := stats.NewStats()
+	// js.Global().Get("document").Get("body").Call("appendChild", stats.DomElement())
+	// c.stats = stats
 
 	// Scene
 	scene := threejs.NewScene()
@@ -223,8 +232,8 @@ func (c *Fundamental7) initSceneAndRenderer() {
 		light.Target().Position().Set2(-5, 0, 0)
 		scene.AddLight(light)
 		scene.Add(light.Target())
-		helper := lights.NewDirectionalLightHelper(light)
-		scene.Add(helper)
+		// helper := lights.NewDirectionalLightHelper(light)
+		// scene.Add(helper)
 	}
 
 	// build GUI
@@ -281,8 +290,9 @@ func (c *Fundamental7) render(this js.Value, args []js.Value) interface{} {
 
 	c.renderer.Render(c.scene, c.camera)
 
-	c.stats.Update()
-	threejs.RequestAnimationFrame(c.renderFunc)
+	// c.stats.Update()
+
+	c.renderID = threejs.RequestAnimationFrame(c.renderFunc)
 
 	return nil
 }

@@ -20,8 +20,8 @@ type directionalLightShadowImp struct {
 	LightShadow
 }
 
-// NewDirectionalLightShadowFromJSValue is constructor
-func NewDirectionalLightShadowFromJSValue(value js.Value) DirectionalLightShadow {
+// newDirectionalLightShadowFromJSValue is constructor
+func newDirectionalLightShadowFromJSValue(value js.Value) DirectionalLightShadow {
 	return &directionalLightShadowImp{
 		NewDefaultLightShadow(value),
 	}

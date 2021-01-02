@@ -35,7 +35,7 @@ func NewDirectionalLight(color threejs.ColorValue, intensity threejs.LightIntens
 
 // Shadow is a DirectionalLightShadow used to calculate shadows for this light.
 func (l *directionalLightImp) Shadow() DirectionalLightShadow {
-	return NewDirectionalLightShadowFromJSValue(l.JSValue().Get("shadow"))
+	return newDirectionalLightShadowFromJSValue(l.JSValue().Get("shadow"))
 }
 
 func (l *directionalLightImp) SetPosition(v *threejs.Vector3) {

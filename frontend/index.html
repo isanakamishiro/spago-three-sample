@@ -1,12 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 
 <head>
+    <title>Loading...</title>
+
     <meta charset="UTF-8" />
+    <meta name="description" content="This page is example Spago and Three.js." />
     <meta name="viewport" content="width=device-width" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="Spago-S1" />
+
+    <!-- UIkit CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.6.5/dist/css/uikit.min.css" />
+    <link rel="stylesheet" href="assets/app.css" />
+
+    <!-- UIkit JS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/uikit@3.6.5/dist/js/uikit.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/uikit@3.6.5/dist/js/uikit-icons.min.js"></script>
 
     <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
@@ -44,13 +55,12 @@
 </head>
 
 <body>
-    <main style="height: 100vh;">
-        <div class="loading loading-lg" style="
-            top: 50%;
-            left: 50%;
-            transform: translateY(-50%) translateX(-50%);
-        "></div>
-    </main>
+    <div class="uk-container uk-position-center">
+            <div uk-spinner="ratio: 3"></div>
+            <div class="uk-text-center">
+                Loading
+            </div>
+    </div>
 </body>
 
 </html>

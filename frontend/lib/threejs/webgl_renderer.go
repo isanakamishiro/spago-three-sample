@@ -39,6 +39,9 @@ type Renderer interface {
 	// SetViewport sets the viewport to render from (x, y) to (x + width, y + height).
 	// (x, y) is the lower-left corner of the region.
 	SetViewport(x, y, width, height int)
+
+	// Dispose of the current rendering context.
+	Dispose()
 }
 
 // WebGLDebug is ...
@@ -111,6 +114,10 @@ func (wglr *webGLRenderer) SetScissorTest(b bool) {
 
 func (wglr *webGLRenderer) SetViewport(x, y, width, height int) {
 	wglr.Call("setViewport", x, y, width, height)
+}
+
+func (wglr *webGLRenderer) Dispose() {
+	wglr.Call("dispose")
 }
 
 // func (wglr *WebGLRenderer) AutoClear() bool {

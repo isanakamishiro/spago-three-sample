@@ -11,6 +11,11 @@ type ColorName string
 // ColorValue is numeric value of the RGB component of the color. e.g. 0xffffff.
 type ColorValue int
 
+// JSValue return the javascript object.
+func (c ColorValue) JSValue() js.Value {
+	return js.ValueOf(int(c))
+}
+
 // HSL is ...
 // type HSL interface {
 // }

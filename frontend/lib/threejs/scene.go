@@ -17,6 +17,11 @@ type Scene interface {
 	Add(v Object3D)
 	AddLight(v Light)
 	AddMesh(v Mesh)
+
+	// Fog gets a fog instance defining the type of fog that affects everything rendered in the scene. Default is null.
+	Fog() FogBase
+	// SetFog sets a fog instance defining the type of fog that affects everything rendered in the scene. Default is null.
+	SetFog(v FogBase)
 }
 
 // sceneImpl extend: [Object3D]
@@ -69,4 +74,14 @@ func (ss *sceneImpl) AddLight(v Light) {
 
 func (ss *sceneImpl) AddMesh(v Mesh) {
 	ss.JSValue().Call("add", v.JSValue())
+}
+
+func (ss *sceneImpl) Fog() FogBase {
+	return NewFogBaseFromJSValue(
+		ss.JSValue().Get("fog"),
+	)
+}
+
+func (ss *sceneImpl) SetFog(v FogBase) {
+	ss.JSValue().Set("fog", v.JSValue())
 }

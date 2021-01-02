@@ -1,7 +1,6 @@
 package threejs
 
 import (
-	"log"
 	"syscall/js"
 )
 
@@ -32,8 +31,6 @@ func (c *callbackRepositoryImp) Register(fn func(this js.Value, args []js.Value)
 
 func (c *callbackRepositoryImp) ReleaseAll() {
 	for _, cb := range c.list {
-
-		log.Printf("Release Callback: %v\n", cb)
 
 		cb.Release()
 	}

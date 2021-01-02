@@ -11,6 +11,10 @@ import (
 type PointLight interface {
 	threejs.Light
 
+	// Shadow gets a PointLightShadow used to calculate shadows for this light.
+	// The lightShadow's camera is set to a PerspectiveCamera with fov of 90, aspect of 1, near clipping plane at 0.5 and far clipping plane at 500.
+	Shadow() PointLightShadow
+
 	// Decay gets the amount the light dims along the distance of the light.
 	// In physically correct mode, decay = 2 leads to physically realistic light falloff. The default is 1.
 	Decay() float64
@@ -70,6 +74,12 @@ func NewPointLight(
 			),
 		),
 	}
+}
+
+func (l *pointLightImp) Shadow() PointLightShadow {
+	return newPointLightShadowFromJSValue(
+		l.JSValue().Get("shadow"),
+	)
 }
 
 func (l *pointLightImp) Decay() float64 {

@@ -68,15 +68,21 @@ func (c *Fundamental6) Mount() {
 	c.initSceneAndRenderer()
 
 	// first render
-	threejs.RequestAnimationFrame(c.renderFunc)
+	c.renderID = threejs.RequestAnimationFrame(c.renderFunc)
 
 }
 
 // Unmount ...
 func (c *Fundamental6) Unmount() {
 
+	// Cancel rendering
+	threejs.CancelAnimationFrame(c.renderID)
+
 	// Release all js.Funcs
 	c.callbacks.ReleaseAll()
+
+	// Dispose current rendering context
+	c.renderer.Dispose()
 
 }
 
@@ -94,13 +100,16 @@ func (c *Fundamental6) initSceneAndRenderer() {
 	c.renderer = renderer
 
 	// GUI
-	gui := datgui.NewGUI()
+	gui := datgui.NewGUIWithParameter(map[string]interface{}{
+		"autoPlace": false,
+	})
+	// js.Global().Get("document").Call("querySelector", "#gui").Call("appendChild", gui.DomElement())
 	c.gui = gui
 
 	// Stats
-	stats := stats.NewStats()
-	js.Global().Get("document").Get("body").Call("appendChild", stats.DomElement())
-	c.stats = stats
+	// stats := stats.NewStats()
+	// js.Global().Get("document").Get("body").Call("appendChild", stats.DomElement())
+	// c.stats = stats
 
 	// Scene
 	scene := threejs.NewScene()
@@ -347,8 +356,9 @@ func (c *Fundamental6) render(this js.Value, args []js.Value) interface{} {
 
 	}
 
-	c.stats.Update()
-	threejs.RequestAnimationFrame(c.renderFunc)
+	// c.stats.Update()
+
+	c.renderID = threejs.RequestAnimationFrame(c.renderFunc)
 
 	return nil
 }

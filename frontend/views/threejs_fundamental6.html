@@ -1,7 +1,14 @@
+<import>app/frontend/components</import>
+
 <body>
-    <canvas id="c"></canvas>
-    <div class="split">
-        <div id="view1" tabindex="1"></div>
-        <div id="view2" tabindex="2"></div>
+    <div id="main" class="uk-cover-container uk-height-1-1">
+        <canvas id="c"></canvas>
+        <div class="split">
+            <div id="view1" tabindex="1"></div>
+            <div id="view2" tabindex="2"></div>
+        </div>
+        <div id="gui" class="uk-position-small uk-position-bottom-right"></div>
     </div>
+    <raw>spago.C(&components.Header{})</raw>
+
 </body>

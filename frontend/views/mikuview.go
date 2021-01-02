@@ -3,11 +3,13 @@ package views
 import (
 	"app/frontend/lib/threejs"
 	"app/frontend/lib/threejs/cameras"
+	"app/frontend/lib/threejs/controls"
+	"app/frontend/lib/threejs/effects"
 	"app/frontend/lib/threejs/geometries"
-	"app/frontend/lib/threejs/helpers"
 	"app/frontend/lib/threejs/lights"
+	"app/frontend/lib/threejs/loaders"
+	"app/frontend/lib/threejs/loaders/mmdloaders"
 	"app/frontend/lib/threejs/materials"
-	"log"
 	"math"
 	"syscall/js"
 
@@ -16,272 +18,253 @@ import (
 
 //go:generate spago generate -c MikuView -p views mikuview.html
 
-// loadScript synchronous javascript loader
-func loadScript(url string) {
-
-	document := js.Global().Get("document")
-
-	ch := make(chan bool)
-	script := document.Call("createElement", "script")
-	script.Set("src", url)
-	var fn js.Func
-	fn = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		defer fn.Release()
-		close(ch)
-		return nil
-	})
-	script.Call("addEventListener", "load", fn)
-	document.Get("head").Call("appendChild", script)
-	<-ch
-}
-
 // MikuView  ...
 type MikuView struct {
 	spago.Core
 
-	camera   threejs.Camera
-	scene    threejs.Scene
-	mesh     threejs.Mesh
-	renderer threejs.Renderer
-	clock    threejs.Clock
+	camera        threejs.Camera
+	scene         threejs.Scene
+	mesh          threejs.Mesh
+	renderer      threejs.Renderer
+	outlineEffect *effects.OutlineEffect
+	mmdHelper     *mmdloaders.MMDAnimationHelper
 
-	renderID     js.Value
-	OnResizeFunc js.Func
+	clock   threejs.Clock
+	control controls.OrbitControls
 
-	outlineEffectMod js.Value
-	// outlineEffect    *effects.OutlineEffect
-	outlineEffect js.Value
+	callbacks threejs.CallbackRepository
 
-	orbitControlsMod js.Value
-	controls         js.Value
-
-	mmdLoaderMod js.Value
-	loader       js.Value
-
-	mmdAnimationHelperMod js.Value
-	helper                js.Value
-
-	statsMod js.Value
-	stats    js.Value
+	renderID   threejs.RenderID
+	renderFunc js.Func
 }
 
 // NewMikuView is ...
 func NewMikuView() *MikuView {
 
-	loadScript("./assets/threejs/ex/js/libs/ammo.wasm.js")
-	orbitControlsMod := spago.LoadModule([]string{"OrbitControls"}, "./assets/threejs/ex/jsm/controls/OrbitControls.js")
-	outlineEffectMod := spago.LoadModule([]string{"OutlineEffect"}, "./assets/threejs/ex/jsm/effects/OutlineEffect.js")
-	mmdLoaderMod := spago.LoadModule([]string{"MMDLoader"}, "./assets/threejs/ex/jsm/loaders/MMDLoader.js")
-	mmdAnimationHelperMod := spago.LoadModule([]string{"MMDAnimationHelper"}, "./assets/threejs/ex/jsm/animation/MMDAnimationHelper.js")
-	statsMod := spago.LoadModule([]string{"Stats"}, "./assets/threejs/ex/jsm/libs/stats.module.js")
-
-	// log.Printf("%v\n", orbitControlsMod[0])
+	// loadScript("./assets/threejs/ex/js/libs/ammo.wasm.js")
 
 	view := &MikuView{
-		outlineEffectMod:      outlineEffectMod[0],
-		orbitControlsMod:      orbitControlsMod[0],
-		mmdLoaderMod:          mmdLoaderMod[0],
-		mmdAnimationHelperMod: mmdAnimationHelperMod[0],
-		statsMod:              statsMod[0],
-		// camera:   camera,
-		// scene:    scene,
-		// mesh:     mesh,
-		// renderer: renderer,
+		callbacks: threejs.NewCallbackRepository(),
 	}
 
 	return view
 }
 
+func (c *MikuView) initSceneAndRenderer() {
+
+	// Renderer
+	renderer := threejs.NewWebGLRenderer(map[string]interface{}{
+		"canvas":    js.Global().Get("document").Call("querySelector", "#c"),
+		"antialias": true,
+		// "alpha":     true,
+	})
+	renderer.ShadowMap().SetEnabled(true)
+	renderer.SetPhysicallyCorrectLights(true)
+	c.renderer = renderer
+
+	// Clock
+	c.clock = threejs.NewClock(true)
+
+	// Camera
+	camera := cameras.NewPerspectiveCamera(45, 4/3, 1, 500)
+	camera.Position().SetZ(40)
+	camera.Position().SetY(16)
+	c.camera = camera
+
+	// Scene
+	scene := threejs.NewScene()
+	scene.SetBackgroundColor(threejs.NewColorFromColorValue(0xffffff))
+	c.scene = scene
+
+	// Control
+	control := controls.NewOrbitControls(camera, renderer.DomElement())
+	control.Target().Set2(0, 12, 0)
+	control.Update()
+	c.control = control
+
+	// Grid
+	// gridHelper := helpers.NewPolarGridHelper(30, 10)
+	// gridHelper.Position().SetY(0)
+	// scene.Add(gridHelper)
+
+	// axes := helpers.NewAxesHelper(5)
+	// axes.Material().SetDepthTest(false)
+	// scene.Add(axes)
+
+	// Ground
+	loader := loaders.NewTextureLoader()
+
+	const planeSize = 40
+
+	texture := loader.LoadSimply("https://threejsfundamentals.org/threejs/resources/images/checker.png")
+	texture.SetWrapS(threejs.RepeatWrapping)
+	texture.SetWrapT(threejs.RepeatWrapping)
+	texture.SetMagFilter(threejs.NearestFilter)
+	repeats := planeSize / 2.0
+	texture.Repeat().Set2(repeats, repeats)
+
+	planeGeo := geometries.NewPlaneBufferGeometry(planeSize, planeSize, 1, 1)
+	planeMat := materials.NewMeshPhongMaterial(map[string]interface{}{
+		"map":  texture,
+		"side": threejs.DoubleSide.JSValue(),
+	})
+	planeMat.Color().SetRGB(1.5, 1.5, 1.5)
+	planeMesh := threejs.NewMesh(planeGeo, planeMat)
+	planeMesh.Rotation().SetX(math.Pi * -0.5)
+	planeMesh.Scale().Set2(2, 2, 2)
+	planeMesh.SetReceiveShadow(true)
+	scene.Add(planeMesh)
+
+	// Light
+
+	// HemisphereLight
+	{
+		const (
+			skyColor       = threejs.ColorValue(0xffffff)
+			groundColor    = threejs.ColorValue(0xb97a20)
+			lightIntensity = threejs.LightIntensity(2)
+		)
+		light := lights.NewHemisphereLight(skyColor, groundColor, lightIntensity)
+		scene.AddLight(light)
+	}
+
+	// DirectionalLight
+	{
+		const (
+			lightColor     = threejs.ColorValue(0xffffff)
+			lightIntensity = threejs.LightIntensity(1)
+			width          = 12.0
+			height         = 4.0
+		)
+		light := lights.NewDirectionalLight(lightColor, lightIntensity)
+		light.SetCastShadow(true)
+		light.Position().Set2(-15, 40, 15)
+		light.Target().Position().Set2(-4, 0, -4)
+
+		light.Shadow().Camera().SetLeft(-20)
+		light.Shadow().Camera().SetRight(20)
+		light.Shadow().Camera().SetTop(20)
+		light.Shadow().Camera().SetBottom(-20)
+
+		scene.AddLight(light)
+		scene.Add(light.Target())
+
+		// cameraHelper := cameras.NewCameraHelper(light.Shadow().Camera())
+		// scene.Add(cameraHelper)
+
+		// helper := lights.NewDirectionalLightHelper(light)
+		// scene.Add(helper)
+	}
+
+	// Effect
+	outlineEffect := effects.NewOutlineEffect(renderer)
+	c.outlineEffect = outlineEffect
+
+	// model
+	// modelFile := "./assets/models/mmd/lat/Lat式ミクVer2.31_Normal.pmd"
+	modelFile := "./assets/models/mmd/miku/miku_v2.pmd"
+	vmdFiles := []string{"./assets/models/mmd/vmds/wavefile_v2.vmd"}
+	// vmdFiles := "./assets/models/mmd/vmds/Unknown.vmd"
+	// cameraFiles := "./assets/models/mmd/vmds/wavefile_camera.vmd"
+
+	mmdHelper := mmdloaders.NewMMDAnimationHelper(map[string]interface{}{
+		"afterglow": 2.0,
+	})
+	c.mmdHelper = mmdHelper
+
+	mmdLoader := mmdloaders.NewMMDLoader()
+	mmdLoader.LoadWithAnimation(modelFile, vmdFiles, func(mesh mmdloaders.MMDMesh, animation mmdloaders.MMDAnimation) {
+
+		mesh.SetCastShadow(true)
+		// mesh.SetReceiveShadow(true)
+
+		scene.AddMesh(mesh)
+		mmdHelper.Add(mesh, map[string]interface{}{
+			"animation": animation.JSValue(),
+			"physics":   true,
+		})
+		c.mesh = mesh
+
+	}, nil, nil)
+
+}
+
+// resizeRendererToDisplaySize resizes render display size.
+func (c *MikuView) resizeRendererToDisplaySize(renderer threejs.Renderer) (sizeChanged bool) {
+	canvas := renderer.DomElement()
+	pixelRatio := js.Global().Get("devicePixelRatio").Float()
+	width := canvas.Get("width").Int()
+	height := canvas.Get("height").Int()
+	clientWidth := int(canvas.Get("clientWidth").Float() * pixelRatio)
+	clientHeight := int(canvas.Get("clientHeight").Float() * pixelRatio)
+
+	needResize := (width != clientWidth || height != clientHeight)
+	if needResize {
+		renderer.SetSize(float64(clientWidth), float64(clientHeight), false)
+	}
+	return needResize
+}
+
+// render renders all objects
+func (c *MikuView) render(this js.Value, args []js.Value) interface{} {
+
+	if sizeChanged := c.resizeRendererToDisplaySize(c.renderer); sizeChanged {
+		canvas := c.renderer.DomElement()
+		clientWidth := canvas.Get("clientWidth").Float()
+		clientHeight := canvas.Get("clientHeight").Float()
+		c.camera.(cameras.PerspectiveCamera).SetAspect(clientWidth / clientHeight)
+		c.camera.(cameras.PerspectiveCamera).UpdateProjectionMatrix()
+	}
+
+	c.control.Update()
+	c.mmdHelper.Update(c.clock.Delta())
+
+	c.renderer.Render(c.scene, c.camera)
+	c.outlineEffect.Render(c.scene, c.camera)
+
+	c.renderID = threejs.RequestAnimationFrame(c.renderFunc)
+
+	return nil
+}
+
 // Mount is ...
 func (c *MikuView) Mount() {
 
-	fn := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		js.Global().Set("Ammo", args[0])
+	var fn js.Func
+	fn = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		defer fn.Release()
 
-		c.initScene()
+		// shortcut of js.Funcs
+		c.renderFunc = c.callbacks.Register(c.render)
 
-		js.Global().Get("document").Get("body").Call("appendChild", c.renderer.DomElement())
-		js.Global().Get("document").Get("body").Call("appendChild", c.stats.Get("dom"))
+		// initialize objects
+		c.initSceneAndRenderer()
 
-		c.OnResizeFunc = js.FuncOf(c.OnResize)
-		js.Global().Call("addEventListener", "resize", c.OnResizeFunc)
-
-		c.OnResize(js.Null(), nil)
-		c.animate(js.Null(), nil)
+		// first render
+		c.renderID = threejs.RequestAnimationFrame(c.renderFunc)
 
 		return nil
 	})
-	js.Global().Call("Ammo").Call("then", fn)
-	// fn.Release()
 
-	// println("Mount!!")
+	// Ammo functionが呼ばれていない状態 = Function, コール後、Object
+	if js.Global().Get("Ammo").Type() == js.TypeFunction {
+		js.Global().Call("Ammo").Call("then", fn)
+	} else {
+		fn.Invoke()
+	}
 
 }
 
 // Unmount ...
 func (c *MikuView) Unmount() {
 
-	js.Global().Call("cancelAnimationFrame", c.renderID)
-	js.Global().Call("removeEventListener", "resize", c.OnResizeFunc)
-	// c.OnResizeFunc.Release()
+	// Cancel rendering
+	threejs.CancelAnimationFrame(c.renderID)
 
-	// println("Unmount!!")
+	// Release all js.Funcs
+	c.callbacks.ReleaseAll()
 
-}
-
-func (c *MikuView) initScene() {
-
-	// Clock
-	c.clock = threejs.NewClock(true)
-
-	// Camera
-	c.camera = cameras.NewPerspectiveCamera(45, 4/3, 1, 2000)
-	c.camera.Position().SetZ(40)
-	c.camera.Position().SetY(40)
-
-	// Scene
-	c.scene = threejs.NewScene()
-	c.scene.SetBackground(threejs.NewColorFromColorValue(0xffffff).JSValue())
-
-	// Grid
-	gridHelper := helpers.NewPolarGridHelper(30, 10)
-	// gridHelper.Position().SetY(0)
-	c.scene.Add(gridHelper)
-
-	// Ground
-	ground := threejs.NewMesh(
-		geometries.NewPlaneBufferGeometry(100, 100, 1, 1),
-		materials.NewMeshPhongMaterial(map[string]interface{}{
-			"color": 0xdddddd,
-		}),
-	)
-	ground.Rotation().SetX(-90 * math.Pi / 180)
-	// ground.SetReceiveShadow(true)
-	ground.JSValue().Set("receiveShadow", true)
-	c.scene.AddMesh(ground)
-
-	// ambient := c.three.NewAmbientLight(0x666666)
-	// c.scene.Add(ambient.JSValue())
-
-	directional := lights.NewDirectionalLight(0xFFFFFF, 1)
-	directional.SetPosition(threejs.NewVector3(-15, 15, 15))
-	// Shadow parameters
-	// directional.JSValue().Set("castShadow", true)
-	directional.SetCastShadow(true)
-	directional.Shadow().MapSize().SetWidth(1024)
-	directional.Shadow().MapSize().SetHeight(1024)
-	// directional.Shadow().Camera().SetRight(20)
-	// directional.Shadow().Camera().SetTop(20)
-	// directional.Shadow().Camera().SetLeft(-20)
-	// directional.Shadow().Camera().SetBottom(-20)
-
-	// directional.Position().Normalize()
-	c.scene.AddLight(directional)
-
-	c.renderer = threejs.NewWebGLRenderer(map[string]interface{}{
-		"antialias": true,
-		"alpha":     false,
-	})
-	c.renderer.JSValue().Get("shadowMap").Set("enabled", true)
-	// c.renderer.ShadowMap().SetEnabled(true)
-
-	c.outlineEffect = c.outlineEffectMod.New(c.renderer.JSValue())
-	// c.outlineEffect = effects.NewOutlineEffect(c.outlineEffectMod, c.renderer)
-
-	// Model specific Shadow parameters
-	// c.renderer.ShadowMap().SetRenderSinglesSided(false)
-	// c.renderer.ShadowMap().SetRenderReverseSided(false)
-	directional.Shadow().SetBias(-0.001)
-
-	// STATS
-	c.stats = c.statsMod.New()
-
-	// model
-	var onProgress js.Func
-	onProgress = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-
-		xhr := args[0]
-		if xhr.Get("lengthComputable").Bool() {
-			loaded := xhr.Get("loaded").Float()
-			total := xhr.Get("total").Float()
-
-			percentComplete := loaded / total * 100
-			log.Printf("%.1f %% downloaded.\n", percentComplete)
-
-		}
-
-		return nil
-	})
-
-	modelFile := "./assets/models/mmd/lat/Lat式ミクVer2.31_Normal.pmd"
-	// modelFile := "./assets/models/mmd/miku/miku_v2.pmd"
-
-	vmdFiles := "./assets/models/mmd/vmds/wavefile_v2.vmd"
-	// vmdFiles := "./assets/models/mmd/vmds/Unknown.vmd"
-	// cameraFiles := "./assets/models/mmd/vmds/wavefile_camera.vmd"
-
-	c.helper = c.mmdAnimationHelperMod.New(map[string]interface{}{
-		"afterglow": 2.0,
-	})
-
-	c.loader = c.mmdLoaderMod.New()
-	c.loader.Call("loadWithAnimation", modelFile, vmdFiles,
-		js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-
-			mmd := args[0]
-			mesh := mmd.Get("mesh")
-			// mesh.Get("position").Set("y", -10)
-			mesh.Set("castShadow", true)
-			mesh.Set("receiveShadow", true)
-
-			c.scene.AddMesh(threejs.NewMeshFromJSValue(mesh))
-
-			c.helper.Call("add", mesh, map[string]interface{}{
-				"animation": mmd.Get("animation"),
-				"physics":   true,
-			})
-
-			return nil
-		}),
-		onProgress,
-		js.Null(),
-	)
-
-	// Controls
-	c.controls = c.orbitControlsMod.New(c.camera.JSValue(), c.renderer.DomElement())
-	c.controls.Set("minDistance", 10)
-	c.controls.Set("maxDistance", 100)
-
-}
-
-func (c *MikuView) animate(this js.Value, args []js.Value) interface{} {
-
-	c.stats.Call("begin")
-
-	c.helper.Call("update", c.clock.Delta())
-
-	c.renderID = js.Global().Call("requestAnimationFrame", js.FuncOf(c.animate))
-	c.outlineEffect.Call("render", c.scene.JSValue(), c.camera.JSValue())
-
-	c.stats.Call("end")
-
-	return nil
-}
-
-// OnResize ...
-func (c *MikuView) OnResize(this js.Value, args []js.Value) interface{} {
-	width := js.Global().Get("innerWidth").Float()
-	height := js.Global().Get("innerHeight").Float()
-
-	c.renderer.SetPixelRatio(js.Global().Get("devicePixelRatio").Float())
-	c.renderer.SetSize(width, height, true)
-	// c.outlineEffect.SetSize(width, height, true)
-
-	c.camera.(cameras.PerspectiveCamera).SetAspect(width / height)
-	c.camera.(cameras.PerspectiveCamera).UpdateProjectionMatrix()
-
-	// println("Fire OnResize")
-
-	return nil
+	// Dispose current rendering context
+	c.renderer.Dispose()
 
 }

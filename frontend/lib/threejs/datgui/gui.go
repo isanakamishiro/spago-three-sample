@@ -19,6 +19,10 @@ func init() {
 	guiModule = m[0]
 }
 
+// GUIParameter is ...
+type GUIParameter interface {
+}
+
 // Controller is an "abstract" class that represents a given property of an object.
 type Controller interface {
 
@@ -49,6 +53,8 @@ type GUI interface {
 	Hide()
 	Show()
 
+	DomElement() js.Value
+
 	// add() Controller
 	// add
 }
@@ -67,6 +73,13 @@ type guiImp struct {
 func NewGUI() GUI {
 	return &guiImp{
 		Value: guiModule.New(),
+	}
+}
+
+// NewGUIWithParameter is ...
+func NewGUIWithParameter(param GUIParameter) GUI {
+	return &guiImp{
+		Value: guiModule.New(param),
 	}
 }
 
@@ -139,6 +152,11 @@ func (c *guiImp) Hide() {
 // Show shows the GUI.
 func (c *guiImp) Show() {
 	c.Call("show")
+}
+
+// DomElement returns outermost DOM Element
+func (c *guiImp) DomElement() js.Value {
+	return c.Get("domElement")
 }
 
 //

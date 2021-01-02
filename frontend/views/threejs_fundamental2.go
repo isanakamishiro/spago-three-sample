@@ -61,7 +61,7 @@ func (c *Fundamental2) Mount() {
 	js.Global().Call("addEventListener", "resize", c.renderRequestFunc)
 
 	// first render
-	c.requestRenderIfNotRequested(js.Null(), nil)
+	c.renderRequestFunc.Invoke()
 }
 
 // Unmount ...
@@ -73,6 +73,9 @@ func (c *Fundamental2) Unmount() {
 
 	// Release all js.Funcs
 	c.callbacks.ReleaseAll()
+
+	// Dispose current rendering context
+	c.renderer.Dispose()
 
 }
 
@@ -110,13 +113,16 @@ func (c *Fundamental2) initSceneAndRenderer() {
 	c.controls = controls
 
 	// GUI
-	gui := datgui.NewGUI()
+	gui := datgui.NewGUIWithParameter(map[string]interface{}{
+		"autoPlace": false,
+	})
+	// js.Global().Get("document").Call("querySelector", "#gui").Call("appendChild", gui.DomElement())
 	c.gui = gui
 
 	// Stats
-	stats := stats.NewStats()
-	js.Global().Get("document").Get("body").Call("appendChild", stats.DomElement())
-	c.stats = stats
+	// stats := stats.NewStats()
+	// js.Global().Get("document").Get("body").Call("appendChild", stats.DomElement())
+	// c.stats = stats
 
 	// Light
 	const (
@@ -156,7 +162,7 @@ func (c *Fundamental2) animate(this js.Value, args []js.Value) interface{} {
 	c.controls.Update()
 	c.renderer.Render(c.scene, c.camera)
 
-	c.stats.Update()
+	// c.stats.Update()
 
 	return nil
 }

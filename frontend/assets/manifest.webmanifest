@@ -2,7 +2,7 @@
   "name": "Spago-sample",
   "short_name": "SpagoS1",
   "description": "Sample Application with Sapgo",
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "icons": [
     {
