@@ -34,7 +34,6 @@ type MikuView struct {
 
 	callbacks threejs.CallbackRepository
 
-	renderID   threejs.RenderID
 	renderFunc js.Func
 }
 
@@ -222,7 +221,7 @@ func (c *MikuView) render(this js.Value, args []js.Value) interface{} {
 	c.renderer.Render(c.scene, c.camera)
 	c.outlineEffect.Render(c.scene, c.camera)
 
-	c.renderID = threejs.RequestAnimationFrame(c.renderFunc)
+	// c.renderID = threejs.RequestAnimationFrame(c.renderFunc)
 
 	return nil
 }
@@ -234,14 +233,15 @@ func (c *MikuView) Mount() {
 	fn = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		defer fn.Release()
 
-		// shortcut of js.Funcs
-		c.renderFunc = c.callbacks.Register(c.render)
-
 		// initialize objects
 		c.initSceneAndRenderer()
 
+		// shortcut of js.Funcs
+		c.renderFunc = c.callbacks.Register(c.render)
+		c.renderer.SetAnimationLoop(c.renderFunc)
+
 		// first render
-		c.renderID = threejs.RequestAnimationFrame(c.renderFunc)
+		// c.renderID = threejs.RequestAnimationFrame(c.renderFunc)
 
 		return nil
 	})
@@ -259,7 +259,8 @@ func (c *MikuView) Mount() {
 func (c *MikuView) Unmount() {
 
 	// Cancel rendering
-	threejs.CancelAnimationFrame(c.renderID)
+	// threejs.CancelAnimationFrame(c.renderID)
+	c.renderer.CancelAnimationLoop()
 
 	// Release all js.Funcs
 	c.callbacks.ReleaseAll()

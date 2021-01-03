@@ -40,6 +40,15 @@ type Renderer interface {
 	// (x, y) is the lower-left corner of the region.
 	SetViewport(x, y, width, height int)
 
+	// SetAnimationLoop sets a built in function that can be used instead of requestAnimationFrame. For WebXR projects this function must be used.
+	//
+	// callback — The function will be called every available frame. If `null` is passed it will stop any already ongoing animation.
+	SetAnimationLoop(callback js.Func)
+
+	// CancelAnimationLoop sets null to 'SetAnimationLoop'.
+	// And stop any already ongoing animation.
+	CancelAnimationLoop()
+
 	// Dispose of the current rendering context.
 	Dispose()
 }
@@ -114,6 +123,14 @@ func (wglr *webGLRenderer) SetScissorTest(b bool) {
 
 func (wglr *webGLRenderer) SetViewport(x, y, width, height int) {
 	wglr.Call("setViewport", x, y, width, height)
+}
+
+func (wglr *webGLRenderer) SetAnimationLoop(callback js.Func) {
+	wglr.Call("setAnimationLoop", callback)
+}
+
+func (wglr *webGLRenderer) CancelAnimationLoop() {
+	wglr.Call("setAnimationLoop", js.Null())
 }
 
 func (wglr *webGLRenderer) Dispose() {
